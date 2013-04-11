@@ -1,0 +1,2 @@
+# 예약된 필수 프로퍼티 (유저 프로퍼티에서 값을 셋할수 없음) : config 경로|실행 운영환경 코드|데이터소스 리스트|로그인페이지 URL|로그인패스URL|WAS_URL_인코딩|로그인체크여부
+REQUIRED_KEYS=CONFIG_PATH|SYS_ENV_CD|LOG_PATH|DATA_SOURCE_LIST|LOGIN_URL|LOGIN_PASS_URL|WAS_URL_ENCODING|LOGIN_CHECK_YN

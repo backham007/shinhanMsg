@@ -1,0 +1,83 @@
+10
+
+dir
+3
+svn://localhost/testro-web/WebContent
+svn://localhost
+
+
+
+2013-04-09T02:50:13.500000Z
+3
+superman
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+572b5740-075c-9148-9886-3fa27244e0a9
+
+META-INF
+dir
+
+WEB-INF
+dir
+
+css
+dir
+
+document
+dir
+
+images
+dir
+
+index.jsp
+file
+
+
+
+
+2013-04-09T02:55:32.703000Z
+42eb6a9ba399c82fa05603a865395c21
+2013-04-09T02:50:13.500000Z
+3
+superman
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+235
+
+jqgrid
+dir
+
+js
+dir
+

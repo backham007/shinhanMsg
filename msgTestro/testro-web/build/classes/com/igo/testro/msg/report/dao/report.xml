@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="report">
+	<typeAlias alias="rptCaseInfoDto" type="com.igo.testro.msg.report.dto.RptCaseInfoDto"/>
+	<typeAlias alias="rptSnrioInfoDto" type="com.igo.testro.msg.report.dto.RptSnrioInfoDto"/>
+	<typeAlias alias="rptTsResultDto" type="com.igo.testro.msg.report.dto.RptTsResultDto"/>
+	<typeAlias alias="rptInOutDataDto" type="com.igo.testro.msg.report.dto.RptInOutDataDto"/>
+	<typeAlias alias="rptCheckpointDto" type="com.igo.testro.msg.report.dto.RptCheckpointDto"/>
+    <typeAlias alias="rptTestSenarioDto" type="com.igo.testro.msg.report.dto.RptTestSenarioDto"/>
+    <typeAlias alias="rptTestCaseDto" type="com.igo.testro.msg.report.dto.RptTestCaseDto"/>
+    <typeAlias alias="reportGridParamDto" type="com.igo.testro.msg.report.dto.ReportGridParamDto"/>
+    <typeAlias alias="empInfoDto" type="com.igo.testro.msg.report.dto.EmpInfoDto"/>
+    <typeAlias alias="empGridParamDto" type="com.igo.testro.msg.report.dto.EmpGridParamDto"/>
+    
+    
+	
+	<!-- 테스트케이스 기본실적 조회 -->
+	<select id="getTsCaseBasic" parameterClass="Map" resultClass="rptCaseInfoDto">
+		/* em.report.getTsCaseBasic_안도현 */
+		SELECT
+			PROJNO	      /*프로젝트번호    */
+			,PROJNAME	    /*프로젝트명      */
+			,TSCASEID	    /*테스트케이스ID  */
+			,TSCASENAME	  /*테스트케이스명  */
+			,TESTSTARTYMS	/*테스트시작일시  */
+			,TESTENDYMS	  /*테스트종료일시	*/
+			,TESTSTGENAME	/*테스트단계명    */
+			,RSULTSUCSSYN	/*거래결과성공여부*/
+			,ACMPLNTH	    /*수행회차        */
+			,TSTRNAME	    /*테스터명        */
+		FROM RPTCASE01
+		WHERE TSCASEID = #tscaseid#
+		  AND ACMPLNTH = #acmplnth#
+	</select>
+
+	<!-- 테스트케이스 상세실적 조회 -->
+	<select id="getListTsCaseData" parameterClass="Map" resultClass="rptCaseInfoDto">
+		/* em_rptdtl.xml_getListTsCaseData_안도현 */
+		SELECT 
+			TSCASEID	      /*테스트케이스ID      */
+			,(
+			SELECT
+				TSCASENAME	  /*테스트케이스명  */
+			FROM RPTCASE01
+			WHERE TSCASEID = #tscaseid#
+			  AND ACMPLNTH = #acmplnth#
+			) AS TSCASENAME
+			,ACMPLNTH	      /*수행회차            */
+			,TSDATAID	      /*테스트데이터ID      */
+			,TSDATAACMPLNTH	/*테스트데이터수행회차*/
+			,RSULTSUCSSYN   /*거래결과성공여부*/
+			,(
+				SELECT 
+				     CASE
+					WHEN COUNT( TSDATAID ) = 0 THEN 'N'
+					ELSE 'Y' END
+				FROM RPTCHEK01
+				WHERE TSDATAID = A.TSDATAID
+				  AND ACMPLNTH = A.TSDATAACMPLNTH /*데이터수행회차*/
+			) AS CHEKYN
+		FROM RPTCASE02 A
+		WHERE TSCASEID = #tscaseid#
+		  AND ACMPLNTH = #acmplnth#
+		ORDER BY TSCASENO
+	</select>
+
+	<!-- 테스트시나리오 기본실적 조회 -->
+	<select id="getTsSnrioBasic" parameterClass="Map" resultClass="rptSnrioInfoDto">
+		/* em.report.getTsSnrioBasic_안도현 */
+		SELECT
+			PROJNO	      /*프로젝트번호    */
+			,PROJNAME	    /*프로젝트명      */
+			,TSSNRIOID	    /*테스트시나리오ID  */
+			,TSSNRIONAME	  /*테스트시나리오명  */
+			,TESTSTARTYMS	/*테스트시작일시  */
+			,TESTENDYMS	  /*테스트종료일시	*/
+			,TESTSTGENAME	/*테스트단계명    */
+			,RSULTSUCSSYN	/*거래결과성공여부*/
+			,ACMPLNTH	    /*수행회차        */
+			,TSTRNAME	    /*테스터명        */
+		FROM RPTSNRO01
+		WHERE TSSNRIOID = #tssnrioid#
+		  AND ACMPLNTH = #acmplnth#
+	</select>
+
+	<!-- 테스트시나리오 상세실적 조회 -->
+	<select id="getListTsSnrioData" parameterClass="Map" resultClass="rptSnrioInfoDto">
+		/* em_rptdtl.xml_getListTsSnrioData_안도현 */
+		SELECT 
+			TSSNRIOID	      /*테스트시나리오ID      */
+			,(
+			SELECT
+				TSSNRIONAME	  /*테스트시나리오명  */
+			FROM RPTSNRO01
+			WHERE TSSNRIOID = #tssnrioid#
+			  AND ACMPLNTH = #acmplnth#
+			) AS TSSNRIONAME
+			,ACMPLNTH	      /*수행회차            */
+			,TSDATAID	      /*테스트데이터ID      */
+			,TSDATAACMPLNTH	/*테스트데이터수행회차*/
+			,RSULTSUCSSYN   /*거래결과성공여부*/
+			,(
+				SELECT 
+				     CASE
+					WHEN COUNT( TSDATAID ) = 0 THEN 'N'
+					ELSE 'Y' END
+				FROM RPTCHEK01
+				WHERE TSDATAID = A.TSDATAID
+				  AND ACMPLNTH = A.TSDATAACMPLNTH /*데이터수행회차*/
+			) AS CHEKYN
+		FROM RPTSNRO02 A
+		WHERE TSSNRIOID = #tssnrioid#
+		  AND ACMPLNTH = #acmplnth#
+		ORDER BY TSSNRIONO
+	</select>
+	
+	<!-- 테스트케이스 테스트결과 조회 -->
+	<select id="getTestCaseResult" parameterClass="Map" resultClass="rptTsResultDto">
+		/* em_rptdtl.getTestResult_안도현 */
+		SELECT
+			 cs1.TRANCD	     /*거래코드*/
+			 ,cs1.TRANNAME	     /*거래명*/
+			 ,cs1.TSCASEID	     /*테스트케이스ID*/
+			 ,cs1.TSCASENAME	/*테스트케이스명*/
+			 ,cs1.TSCASEDESC	/*테스트케이스설명*/
+			 ,dt1.TSDATAID	     /*테스트데이터ID*/
+			 ,dt1.ACMPLNTH	     /*테스트데이터회차*/
+			 ,dt1.TSDATANAME	/*테스트데이터명*/
+			 ,dt1.TSDATADESC	/*테스트데이터설명*/
+		     ,dt1.TESTSTARTYMS	/*테스트시작일시*/
+		     ,dt1.TESTENDYMS	/*테스트종료일시*/
+		     ,dt1.ELAPSEDTIME	/*테스트경과시간*/
+		     ,(
+				SELECT 
+				     CASE
+					WHEN COUNT( TSDATAID ) = 0 THEN '미지정'
+					ELSE '지정' END
+				FROM RPTCHEK01
+				WHERE TSDATAID = #tsdataid#
+				  AND ACMPLNTH = #tsdataacmplnth# /*데이터수행회차*/
+			) AS CHEKYN
+			, (CASE WHEN dt1.RSULTSUCSSYN = 'Y' THEN '성공' ELSE '실패' END) AS RSULTSUCSSYN	/*거래결과성공여부*/
+		
+		FROM RPTDATA01 dt1, RPTCASE02 cs2, RPTCASE01 cs1
+		WHERE dt1.TSDATAID = #tsdataid#
+		  AND dt1.ACMPLNTH = #tsdataacmplnth#  /*데이터수행회차*/
+		  AND dt1.TSDATAID = cs2.TSDATAID
+		  AND dt1.ACMPLNTH = cs2.TSDATAACMPLNTH
+		  AND cs2.TSCASEID = cs1.TSCASEID
+		  AND cs2.ACMPLNTH = cs1.ACMPLNTH
+	</select>
+	
+	<!-- 테스트시나리오 테스트결과 조회 -->
+	<select id="getTestSnrioResult" parameterClass="Map" resultClass="rptTsResultDto">
+		/* em_rptdtl.getTestSnrioResult_안도현 */
+		SELECT
+			  dt1.TRANCD	     /*거래코드*/
+			 ,dt1.TRANNAME	     /*거래명*/
+			 ,cs1.TSSNRIOID	     /*테스트시나리오ID*/
+			 ,cs1.TSSNRIONAME	/*테스트시나리오명*/
+			 ,cs1.TSSNRIODESC	/*테스트시나리오설명*/
+			 ,dt1.TSDATAID	     /*테스트데이터ID*/
+			 ,dt1.ACMPLNTH	     /*테스트데이터회차*/
+			 ,dt1.TSDATANAME	/*테스트데이터명*/
+			 ,dt1.TSDATADESC	/*테스트데이터설명*/
+		     ,dt1.TESTSTARTYMS	/*테스트시작일시*/
+		     ,dt1.TESTENDYMS	/*테스트종료일시*/
+		     ,dt1.ELAPSEDTIME	/*테스트경과시간*/
+		     ,(
+				SELECT 
+				     CASE
+					WHEN COUNT( TSDATAID ) = 0 THEN '미지정'
+					ELSE '지정' END
+				FROM RPTCHEK01
+				WHERE TSDATAID = #tsdataid#
+				  AND ACMPLNTH = #tsdataacmplnth# /*데이터수행회차*/
+			) AS CHEKYN
+			, (CASE WHEN dt1.RSULTSUCSSYN = 'Y' THEN '성공' ELSE '실패' END) AS RSULTSUCSSYN	/*거래결과성공여부*/
+		
+		FROM RPTDATA01 dt1, RPTSNRO02 cs2, RPTSNRO01 cs1
+		WHERE dt1.TSDATAID = #tsdataid#
+		  AND dt1.ACMPLNTH = #tsdataacmplnth#  /*데이터수행회차*/
+		  AND dt1.TSDATAID = cs2.TSDATAID
+		  AND dt1.ACMPLNTH = cs2.TSDATAACMPLNTH
+		  AND cs2.TSSNRIOID = cs1.TSSNRIOID
+		  AND cs2.ACMPLNTH = cs1.ACMPLNTH
+	</select>
+	
+	<!-- 테스트 입출력 데이터 기본-->
+	<select id="getInOutDataBasic" parameterClass="Map" resultClass="rptInOutDataDto">
+		/* em_rptdtl.getInOutDataBasic_안도현 */
+		SELECT
+			 TSDATANAME	/*테스트데이터명*/
+			,TRANCD	     /*거래코드*/
+			,(CASE 
+				WHEN RSULTSUCSSYN = 'Y' THEN '성공'
+				ELSE '실패'
+			END
+			) RSULTSUCSSYN_OLD	/*거래결과성공여부*/
+			,RSULTMSG RSULTSUCSSYN	/*거래결과메시지*/
+		FROM RPTDATA01
+		WHERE TSDATAID = #tsDataId#
+		  AND ACMPLNTH = #tsDataAcmplnth#
+	</select>
+
+	<!-- 테스트 입출력 데이터 상세 리스트-->
+	<select id="getListInOutDataDetail" parameterClass="Map" resultClass="rptInOutDataDto">
+		/* em_rptdtl.getListInOutDataDetail_안도현 */
+		SELECT
+			 TSDATAFLDNAME	/*테스트데이터필드명*/
+			,TSDATAFLDDATA /*테스트데이터필드데이터*/
+			,TSCSFLDDESC	/*테스트데이터필드설명*/
+			,TSCSFLDDIV		/*테스트데이터필드구분*/
+			,TSCSFLDTYPE	/*테스트데이터필드타입*/
+			,RPTNAME		/*반복부명*/
+			,RPTCNT			/*반복부회차*/
+		<dynamic>
+			<isNotEmpty prepend="from" property="tableName">
+			$tableName$ /* RPTDATA02(입력),RPTDATA03(출력)*/
+			</isNotEmpty>
+		</dynamic>
+		WHERE TSDATAID = #tsDataId#
+		  AND ACMPLNTH = #tsDataAcmplnth#
+		  AND TSCSFLDDIV = #fldDiv#
+		ORDER BY TSDATANO
+	</select>
+	
+	<!-- 체크포인트 실적 상세 리스트-->
+	<select id="getListCheckPoint" parameterClass="Map" resultClass="rptCheckpointDto">
+		/* em_rptdtl.getListCheckPoint_안도현 */
+		SELECT
+			 CHKNO	           /*체크포인트일련번호        */
+			,TSDATADESC	       /*테스트데이터설명          */                        
+			,TRIM(CHKPOINTSUCSSYN) CHKPOINTSUCSSYN   /*체크포인트성공여부        */                               
+			,TSDATAFLDNAME	   /*테스트데이터필드명        */                                 
+			,TSCSFLDDESC	   /*테스트데이터필드설명      */                         
+			,TSCSUSRFLDDESC	   /*테스트데이터사용자필드설명*/
+			,CHKPOINTEXPCCTNT  /* 체크포인트기대내용 */
+			,CASE WHEN CHKYN = 'Y' THEN '설정'
+				  ELSE '미설정' END CHKYN         /* 체크포인트설정여부 */
+			,CHKPOINTOUTPTCTNT /* 체크포인트출력내용 */
+			,TSCSFLDDIV		   /* 테스트데이터필드구분 */
+			,TSCSFLDTYPE	   /* 테스트데이터필드타입 */
+			,TSCSFLDATTRIB	   /* 테스트데이터필드속성 */
+			,RPTCNTNAME		   /* 반복부전체회차필드명 */
+			,RPTNAME		   /* 반복부명       */
+			,RPTCNT			   /* 반복부회차      */
+		FROM RPTCHEK01
+		WHERE TSDATAID = #tsDataId#
+		   AND ACMPLNTH = #tsDataAcmplnth#
+		ORDER BY CHKNO
+	</select>
+	
+	<!-- 테스트 시나리오 리스트 count --> 
+	<select id="getListTestSenarioCount" parameterClass="reportGridParamDto" resultClass="rptTestSenarioDto">
+		/* em_report_report.xml_getListTestSenarioCount_안도현 */
+		select  rpt01.TSSNRIOID
+				from (select 
+						rpt01.TSSNRIOID	    
+						,rpt01.ACMPLNTH	    
+						,(select DTAILNAME FROM MNGCODE01 WHERE CDCLMNNAME = 'CONNSEVRDSTCD' AND DTAILCD = rpt01.CONNSEVRDSTCD) AS "CONNSEVRDSTCD"
+						,rpt01.TSSNRIONAME	  
+						,rpt01.PROJNAME	    
+						,rpt01.RSULTMSG	    
+						,rpt01.TESTSTARTYMS	
+						,rpt01.TESTENDYMS	  
+						,rpt01.WRITEID	    
+						,rpt01.WRITENAME
+						,rpt01.RSULTSUCSSYN 
+					from RPTSNRO01 rpt01 
+					where 1=1
+					<isNotEmpty property="writename">
+						and TSTRID LIKE #writename#||'%'
+						or TSTRNAME LIKE #writename#||'%'
+					</isNotEmpty>
+					<isNotEqual property="testStgeName" compareValue="00" prepend="AND">
+						TESTSTGENAME = #testStgeName#
+					</isNotEqual>
+					<isNotEmpty property="tesdiv_sub_text">
+						<isEqual property="tesdiv_sub" compareValue="01" prepend="and">
+						TSSNRIONAME = #tesdiv_sub_text#
+						</isEqual>
+						<isEqual property="tesdiv_sub" compareValue="02" prepend="and">
+						TSSNRIOID = #tesdiv_sub_text#
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="projNo" prepend="and">
+						PROJNO = #projNo#
+					</isNotEmpty>
+					<isNotEmpty property="projName" prepend="and">
+						PROJNAME = #projName#
+					</isNotEmpty>
+					<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+						CONNSEVRDSTCD = #connSevrDstcd#
+					</isNotEqual>
+					<isNotEmpty property="teststartyms" prepend="AND">
+				      substr(TESTSTARTYMS, 1, 8) between #teststartyms# and #testendyms#                 
+				       and                  
+				       substr(TESTENDYMS, 1, 8) between #teststartyms# and #testendyms#
+					</isNotEmpty>
+
+					<isNotEqual property="exresult" compareValue="00">
+					
+						<isEqual property="exresult" compareValue="01" prepend="and">
+						RSULTSUCSSYN = 'Y'
+						</isEqual>
+						<isEqual property="exresult" compareValue="02" prepend="and">
+						RSULTSUCSSYN = 'N'
+						</isEqual>
+					</isNotEqual>
+					)  rpt01 LEFT OUTER JOIN RPTSNRO02 rpt02
+				  on rpt01.TSSNRIOID = rpt02.TSSNRIOID
+				  and rpt01.ACMPLNTH = rpt02.ACMPLNTH
+				group by rpt01.TSSNRIOID	    
+						,rpt01.ACMPLNTH	    
+						,rpt01.CONNSEVRDSTCD
+						,rpt01.TSSNRIONAME	  
+						,rpt01.PROJNAME	    
+						,rpt01.RSULTMSG	    
+						,rpt01.TESTSTARTYMS	
+						,rpt01.TESTENDYMS	  
+						,rpt01.WRITEID	    
+						,rpt01.WRITENAME
+						,rpt01.RSULTSUCSSYN
+	</select>
+    
+    <!-- 테스트 시나리오 리스트 -->
+    <select id="getListTestSenario" parameterClass="reportGridParamDto" resultClass="rptTestSenarioDto">
+        /* em_report_report.xml_getListTestSenario_안도현 */
+		select  rpt01.TSSNRIOID
+				,rpt01.ACMPLNTH   
+				,rpt01.CONNSEVRDSTCD
+				,rpt01.TSSNRIONAME	  
+				,rpt01.PROJNAME	    
+				,rpt01.TESTSTARTYMS	
+				,rpt01.TESTENDYMS	  
+				,rpt01.WRITEID
+				,rpt01.WRITENAME
+				,( case when rpt01.RSULTSUCSSYN = 'Y'   then '성공' else '실패' END) AS "RSULTSUCSSYN"
+ 				,sum( case when rpt02.RSULTSUCSSYN = 'Y'   then 1 else 0 END ) AS "SUCCESSCNT"
+		    		,sum( case when rpt02.RSULTSUCSSYN = 'N'   then 1 else 0 END ) AS "FAILCNT"
+				from (select 
+						rpt01.TSSNRIOID	    
+						,rpt01.ACMPLNTH	    
+						,(select DTAILNAME FROM MNGCODE01 WHERE CDCLMNNAME = 'CONNSEVRDSTCD' AND DTAILCD = rpt01.CONNSEVRDSTCD) AS "CONNSEVRDSTCD"
+						,rpt01.TSSNRIONAME	  
+						,rpt01.PROJNAME	    
+						,rpt01.RSULTMSG	    
+						,rpt01.TESTSTARTYMS	
+						,rpt01.TESTENDYMS	  
+						,rpt01.WRITEID	    
+						,rpt01.WRITENAME
+						,rpt01.RSULTSUCSSYN 
+					from RPTSNRO01 rpt01 
+					where 1=1 
+					<isNotEmpty property="writename">
+						and TSTRID LIKE #writename#||'%'
+						or TSTRNAME LIKE #writename#||'%'
+					</isNotEmpty>
+					<isNotEqual property="testStgeName" compareValue="00" prepend="AND">
+						TESTSTGENAME = #testStgeName#
+					</isNotEqual>
+					<isNotEmpty property="tesdiv_sub_text">
+						<isEqual property="tesdiv_sub" compareValue="01" prepend="and">
+						TSSNRIONAME = #tesdiv_sub_text#
+						</isEqual>
+						<isEqual property="tesdiv_sub" compareValue="02" prepend="and">
+						TSSNRIOID = #tesdiv_sub_text#
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="projNo" prepend="and">
+						PROJNO = #projNo#
+					</isNotEmpty>
+					<isNotEmpty property="projName" prepend="and">
+						PROJNAME = #projName#
+					</isNotEmpty>
+					<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+						CONNSEVRDSTCD = #connSevrDstcd#
+					</isNotEqual>
+					<isNotEmpty property="teststartyms" prepend="AND">
+				      substr(TESTSTARTYMS, 1, 8) between #teststartyms# and #testendyms#                 
+				       and                  
+				       substr(TESTENDYMS, 1, 8) between #teststartyms# and #testendyms#
+					</isNotEmpty>
+					<isNotEqual property="exresult" compareValue="00">
+					
+						<isEqual property="exresult" compareValue="01" prepend="and">
+						RSULTSUCSSYN = 'Y'
+						</isEqual>
+						<isEqual property="exresult" compareValue="02" prepend="and">
+						RSULTSUCSSYN = 'N'
+						</isEqual>
+					</isNotEqual>
+					)  rpt01 LEFT OUTER JOIN RPTSNRO02 rpt02
+				  on rpt01.TSSNRIOID = rpt02.TSSNRIOID
+				  and rpt01.ACMPLNTH = rpt02.ACMPLNTH
+				group by rpt01.TSSNRIOID	    
+						,rpt01.ACMPLNTH	    
+						,rpt01.CONNSEVRDSTCD
+						,rpt01.TSSNRIONAME	  
+						,rpt01.PROJNAME	    
+						,rpt01.RSULTMSG	    
+						,rpt01.TESTSTARTYMS	
+						,rpt01.TESTENDYMS	  
+						,rpt01.WRITEID	    
+						,rpt01.WRITENAME
+						,rpt01.RSULTSUCSSYN
+				<dynamic prepend="ORDER BY">
+					<isNotEmpty property="sidx">
+					$sidx$ $sord$
+					</isNotEmpty>
+				</dynamic>
+    </select>
+
+	<!-- 테스트 케이스 리스트 count --> 
+	<select id="getListTestCaseCount" parameterClass="reportGridParamDto" resultClass="rptTestCaseDto">
+		/* em_report_report.xml_getListTestCaseCount_안도현 */
+		select  rpt01.TSCASEID
+				from (select 
+							rpt01.TSCASEID            
+							,rpt01.ACMPLNTH            
+							,(select DTAILNAME FROM MNGCODE01 WHERE CDCLMNNAME = 'CONNSEVRDSTCD' AND DTAILCD = rpt01.CONNSEVRDSTCD) AS "CONNSEVRDSTCDNM"
+							,rpt01.CONNSEVRDSTCD
+							,rpt01.TSCASENAME          
+							,rpt01.PROJNAME            
+							,rpt01.RSULTMSG            
+							,rpt01.TESTSTARTYMS        
+							,rpt01.TESTENDYMS
+							,rpt01.WRITEID            
+							,rpt01.WRITENAME       
+							,rpt01.TESTSTGENAME       
+							,rpt01.RSULTSUCSSYN  
+							from rptcase01 rpt01 where 1=1
+					<isNotEmpty property="writename">
+						and TSTRID LIKE #writename#||'%'
+						or TSTRNAME LIKE #writename#||'%'
+					</isNotEmpty>
+					<isNotEqual property="testStgeName" compareValue="00" prepend="AND">
+						TESTSTGENAME = #testStgeName#
+					</isNotEqual>
+					<isNotEmpty property="tesdiv_sub_text">
+						<isEqual property="tesdiv_sub" compareValue="01" prepend="and">
+						TSCASENAME = #tesdiv_sub_text#
+						</isEqual>
+						<isEqual property="tesdiv_sub" compareValue="02" prepend="and">
+						TSCASEID = #tesdiv_sub_text#
+						</isEqual>
+						<isEqual property="tesdiv_sub" compareValue="03" prepend="and">
+						TRANCD = #tesdiv_sub_text#
+						</isEqual>
+					</isNotEmpty>
+					<isNotEmpty property="projNo" prepend="and">
+						PROJNO = #projNo#
+					</isNotEmpty>
+					<isNotEmpty property="projName" prepend="and">
+						PROJNAME = #projName#
+					</isNotEmpty>
+					<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+						CONNSEVRDSTCD = #connSevrDstcd#
+					</isNotEqual>
+					<isNotEmpty property="teststartyms" prepend="AND">
+				      substr(TESTSTARTYMS, 1, 8) between #teststartyms# and #testendyms#                 
+				       and                  
+				       substr(TESTENDYMS, 1, 8) between #teststartyms# and #testendyms#
+					</isNotEmpty>
+					<isNotEqual property="exresult" compareValue="00">
+					
+						<isEqual property="exresult" compareValue="01" prepend="and">
+						RSULTSUCSSYN = 'Y'
+						</isEqual>
+						<isEqual property="exresult" compareValue="02" prepend="and">
+						RSULTSUCSSYN = 'N'
+						</isEqual>
+					</isNotEqual>
+					)  rpt01 LEFT OUTER JOIN rptcase02 rpt02
+				  on rpt01.TSCASEID = rpt02.TSCASEID
+				  and rpt01.ACMPLNTH = rpt02.ACMPLNTH
+				  and rpt01.TSCASEID = rpt02.TSCASEID
+				group by rpt01.TSCASEID	    
+						,rpt01.ACMPLNTH	    
+						,rpt01.CONNSEVRDSTCD
+						,rpt01.TSCASENAME	  
+						,rpt01.PROJNAME	    
+						,rpt01.RSULTMSG	    
+						,rpt01.TESTSTARTYMS	
+						,rpt01.TESTENDYMS	  
+						,rpt01.WRITEID	    
+						,rpt01.WRITENAME
+						,rpt01.TESTSTGENAME
+						,rpt01.RSULTSUCSSYN
+						,rpt01.CONNSEVRDSTCDNM
+	</select>
+    
+    <!-- 테스트 케이스 리스트 -->
+    <select id="getListTestCase" parameterClass="reportGridParamDto" resultClass="rptTestCaseDto">
+        /* em_report_report.xml_getListTestCase_안도현 */
+		select 
+			TSCASEID,
+			ACMPLNTH ,
+			CONNSEVRDSTCDNM ,
+			CONNSEVRDSTCD ,
+			TSCASENAME ,
+			PROJNAME ,
+			TESTSTARTYMS ,
+			TESTENDYMS ,
+			WRITEID ,
+			WRITENAME ,
+			TESTSTGENAME ,
+			RSULTSUCSSYN,
+			SUCCESSCNT,
+			FAILCNT
+		from (
+			select  rpt01.TSCASEID
+					,rpt01.ACMPLNTH   
+					,rpt01.CONNSEVRDSTCDNM
+					,rpt01.CONNSEVRDSTCD
+					,rpt01.TSCASENAME	  
+					,rpt01.PROJNAME	    
+					,rpt01.TESTSTARTYMS	
+					,rpt01.TESTENDYMS	  
+					,rpt01.WRITEID
+					,rpt01.WRITENAME
+					,rpt01.TESTSTGENAME
+					,( case when rpt01.RSULTSUCSSYN = 'Y'   then '성공' else '실패' END) AS "RSULTSUCSSYN"
+	 				,sum( case when rpt02.RSULTSUCSSYN = 'Y'   then 1 else 0 END ) AS "SUCCESSCNT"
+			    	,sum( case when rpt02.RSULTSUCSSYN = 'N'   then 1 else 0 END ) AS "FAILCNT"
+					from (select 
+								rpt01.TSCASEID            
+								,rpt01.ACMPLNTH            
+								,(select DTAILNAME FROM MNGCODE01 WHERE CDCLMNNAME = 'CONNSEVRDSTCD' AND DTAILCD = rpt01.CONNSEVRDSTCD) AS "CONNSEVRDSTCDNM"
+								,rpt01.CONNSEVRDSTCD
+								,rpt01.TSCASENAME          
+								,rpt01.PROJNAME            
+								,rpt01.RSULTMSG            
+								,rpt01.TESTSTARTYMS        
+								,rpt01.TESTENDYMS
+								,rpt01.WRITEID            
+								,rpt01.WRITENAME       
+								,rpt01.TESTSTGENAME       
+								,rpt01.RSULTSUCSSYN  
+								from rptcase01 rpt01 where 1=1
+						<isNotEmpty property="writename">
+							and TSTRID LIKE #writename#||'%'
+							or TSTRNAME LIKE #writename#||'%'
+						</isNotEmpty>
+						<isNotEqual property="testStgeName" compareValue="00" prepend="AND">
+							TESTSTGENAME = #testStgeName#
+						</isNotEqual>
+						<isNotEmpty property="tesdiv_sub_text">
+							<isEqual property="tesdiv_sub" compareValue="01" prepend="and">
+							TSCASENAME = #tesdiv_sub_text#
+							</isEqual>
+							<isEqual property="tesdiv_sub" compareValue="02" prepend="and">
+							TSCASEID = #tesdiv_sub_text#
+							</isEqual>
+							<isEqual property="tesdiv_sub" compareValue="03" prepend="and">
+							TRANCD = #tesdiv_sub_text#
+							</isEqual>
+						</isNotEmpty>
+						<isNotEmpty property="projNo" prepend="and">
+							PROJNO = #projNo#
+						</isNotEmpty>
+						<isNotEmpty property="projName" prepend="and">
+							PROJNAME = #projName#
+						</isNotEmpty>
+						<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+							CONNSEVRDSTCD = #connSevrDstcd#
+						</isNotEqual>
+						<isNotEmpty property="teststartyms" prepend="AND">
+					      substr(TESTSTARTYMS, 1, 8) between #teststartyms# and #testendyms#                 
+					       and                  
+					       substr(TESTENDYMS, 1, 8) between #teststartyms# and #testendyms#
+						</isNotEmpty>
+						<isNotEqual property="exresult" compareValue="00">
+						
+							<isEqual property="exresult" compareValue="01" prepend="and">
+							RSULTSUCSSYN = 'Y'
+							</isEqual>
+							<isEqual property="exresult" compareValue="02" prepend="and">
+							RSULTSUCSSYN = 'N'
+							</isEqual>
+						</isNotEqual>
+						)  rpt01 LEFT OUTER JOIN rptcase02 rpt02
+					  on rpt01.TSCASEID = rpt02.TSCASEID
+					  and rpt01.ACMPLNTH = rpt02.ACMPLNTH
+					  and rpt01.TSCASEID = rpt02.TSCASEID
+					group by rpt01.TSCASEID	    
+							,rpt01.ACMPLNTH	    
+							,rpt01.CONNSEVRDSTCD
+							,rpt01.TSCASENAME	  
+							,rpt01.PROJNAME	    
+							,rpt01.RSULTMSG	    
+							,rpt01.TESTSTARTYMS	
+							,rpt01.TESTENDYMS	  
+							,rpt01.WRITEID	    
+							,rpt01.WRITENAME
+							,rpt01.TESTSTGENAME
+							,rpt01.RSULTSUCSSYN
+							,rpt01.CONNSEVRDSTCDNM
+			) T 
+				<dynamic prepend="ORDER BY">
+					<isNotEmpty property="sidx">
+					$sidx$ $sord$
+					</isNotEmpty>
+				</dynamic>
+    </select>
+    
+    <!-- 직원정보조회 count -->
+    <select id="getPjtEmpLstCnt" parameterClass="empGridParamDto" resultClass="Integer">
+    	/* em_report_report.xml_getPjtEmpLstCnt_안도현 */
+		SELECT
+			count(a.USRID)
+		FROM MNGUSER01 a, MNGUSER02 b
+		WHERE a.DELYN = 'N'
+			AND a.USRID = b.USRID
+			AND b.DELYN = 'N'
+			<isNotEmpty property="usrname" prepend="AND">
+			a.USRNAME LIKE '%'||#usrname#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="projNo" prepend="AND">
+			b.PROJNO = #projNo#
+			</isNotEmpty>
+			<isNotEmpty property="projName" prepend="AND">
+			b.PROJNAME = #projName#
+			</isNotEmpty>
+    </select>
+    
+    <!-- 직원정보조회 리스트 -->
+	<select id="getPjtEmpLst" parameterClass="empGridParamDto" resultClass="empInfoDto">
+		/* em_report_report.xml_getPjtEmpLst_안도현 */
+		SELECT
+			a.USRNAME,
+			a.USRID,
+			b.PROJNO,
+			b.PROJNAME
+		FROM MNGUSER01 a, MNGUSER02 b
+		WHERE a.DELYN = 'N'
+			AND a.USRID = b.USRID
+			AND b.DELYN = 'N'
+			<isNotEmpty property="usrname" prepend="AND">
+			a.USRNAME LIKE '%'||#usrname#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="projNo" prepend="AND">
+			b.PROJNO = #projNo#
+			</isNotEmpty>
+			<isNotEmpty property="projName" prepend="AND">
+			b.PROJNAME = #projName#
+			</isNotEmpty>
+			<dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+				$sidx$ $sord$
+				</isNotEmpty>
+			</dynamic>
+			
+	</select>
+</sqlMap>

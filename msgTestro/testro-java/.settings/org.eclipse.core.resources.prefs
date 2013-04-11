@@ -1,0 +1,8 @@
+#Wed Apr 03 14:50:43 KST 2013
+eclipse.preferences.version=1
+encoding//src/com/igo/testro/anot/LogInfo.java=UTF-8
+encoding//src/com/igo/testro/aop/aspect/MethodInterceptorLogAspect.java=UTF-8
+encoding//src/com/igo/testro/bean/util/TestroBeanUtil.java=UTF-8
+encoding//src/com/igo/testro/resource/log4j.xml=UTF-8
+encoding//src/com/igo/testro/svclistener/TestroDispatcherServlet.java=UTF-8
+encoding/<project>=UTF-8

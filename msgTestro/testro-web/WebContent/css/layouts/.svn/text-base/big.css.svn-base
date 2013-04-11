@@ -1,0 +1,8 @@
+/* $Id: big.css,v 1.2 2008/10/06 06:54:56 ssoh Exp $ */
+.calendar {
+  font-size: 14px;
+}
+
+.calendar table {
+  font-size: 14px;
+}

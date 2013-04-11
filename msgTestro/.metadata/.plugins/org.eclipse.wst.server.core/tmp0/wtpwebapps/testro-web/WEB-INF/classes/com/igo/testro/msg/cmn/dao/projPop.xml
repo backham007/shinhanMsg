@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+ <sqlMap namespace="projPop">
+ 	<!-- 프로젝트조회 건수 -->
+ 	<select id="getListProjCnt" parameterClass="java.util.Map" resultClass="Integer">
+ 		/* em_cmn_projPop.xml_getListProj_고재형 */
+ 		SELECT count(*)
+ 		FROM
+ 		(
+			SELECT PROJNO
+			  FROM TESINFO01
+			 WHERE (UPPER(PROJNO) LIKE '%'||UPPER(#projNoName#)||'%' OR UPPER(PROJNAME) LIKE '%'||UPPER(#projNoName#)||'%')
+			<isNotEmpty property="testStartYMS">
+			<![CDATA[
+			   AND TESTSTARTYMS >= #testStartYMS#
+			]]>
+			</isNotEmpty>
+			<isNotEmpty property="testEndYMS">
+			<![CDATA[
+			   AND TESTENDYMS <= #testEndYMS#
+			]]>
+			</isNotEmpty>
+			GROUP BY PROJNO
+		) A
+ 	</select>
+ 	
+ 	<!-- 프로젝트조회 -->
+    <select id="getListProj" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.cmn.dto.ProjPopDto">
+    	/* em_cmn_projPop.xml_getListProj_고재형 */
+		SELECT PROJNO PROJNO
+			  ,MAX(PROJNAME) PROJNAME 
+			  ,MIN(TESTSTARTYMS) TESTSTARTYMS
+			  ,MAX(TESTENDYMS) TESTENDYMS
+		  FROM TESINFO01
+		 WHERE (UPPER(PROJNO) LIKE '%'||UPPER(#projNoName#)||'%' OR UPPER(PROJNAME) LIKE '%'||UPPER(#projNoName#)||'%')
+		<isNotEmpty property="testStartYMS">
+		<![CDATA[
+		   AND TESTSTARTYMS >= #testStartYMS#
+		]]>
+		</isNotEmpty>
+		<isNotEmpty property="testEndYMS">
+		<![CDATA[
+		   AND TESTENDYMS <= #testEndYMS#
+		]]>
+		</isNotEmpty>
+		GROUP BY PROJNO
+		<isNotEmpty property="sidx">
+		ORDER BY MAX($sidx$) $sord$
+		</isNotEmpty>
+    </select>
+     
+    <!-- 테스트단계명 조회 -->
+    <select id="getListTestStgeName" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.cmn.dto.ProjPopDto">
+    	  /* em_cmn_projPop.xml_getListTestStgeName_고재형 */
+    	  SELECT TESTSTGENAME
+    	    FROM TESINFO01
+    	   WHERE PROJNO = #projNo#
+    	  ORDER BY TESTSTARTYMS, TESTENDYMS
+    </select>
+</sqlMap>
+
+   

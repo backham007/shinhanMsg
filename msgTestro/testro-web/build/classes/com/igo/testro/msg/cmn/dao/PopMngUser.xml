@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="PopMngUser">
+
+    <select id="getCheck" parameterClass="String" resultClass="Integer">
+    /* em_cmn_PopMngUser.xml_getCheck_노찬균  */
+		select count(*) userIdCheck
+		from mnguser01
+		where "USRID" = #usrID# and
+			"DELYN" = 'N'
+	</select>
+	
+	<select id="getDelYNCheck" parameterClass="String" resultClass="Integer">
+    /* em_cmn_PopMngUser.xml_getDelYNCheck_노찬균  */
+		select count(*) userIdCheck
+		from mnguser01
+		where "USRID" = #usrID# and
+			"DELYN" = 'Y'
+	</select>
+	
+	<update id="getclearPass" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto">
+	/* em_cmn_PopMngUser.xml_getclearPass_노찬균  */
+		UPDATE MNGUSER01 
+		SET "USRPWD" = 'testro01'
+		WHERE  "USRID"=#usrID#
+				and "USRNAME"=#usrName#
+	</update>
+	
+	<insert id="getUserIdInsert" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto">
+	/* em_cmn_PopMngUser.xml_getUserIdInsert_노찬균  */
+		INSERT INTO MNGUSER01 (
+			"USRID"
+			,"USRPWD"
+			,"USRNAME"
+			,"USRLEVEL"
+			,"DELYN"
+			,"LASTMODFIID"
+			,"LASTMODFIYMS"
+			,"RMARK"
+		)
+		VALUES (
+			#usrID#
+			,'testro01'
+			,#usrName#
+			,#usrLevel#
+			,'N'
+			,#usrName#
+			,#lastModfiYMS#
+			,''
+		)
+	</insert>
+	
+	<update id="getUserIdUpdate" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto" >
+	/* em_cmn_PopMngUser.xml_getUserIdUpdate_노찬균  */
+		UPDATE MNGUSER01 
+		SET	"USRLEVEL" = #usrLevel#,
+			"USRNAME"=#usrName#,
+			"LASTMODFIID" = #lastModfiId#,
+			"LASTMODFIYMS" = #lastModfiYMS#
+		WHERE  "USRID"=#usrID#
+	</update>
+	
+	<update id="getUserIdNewUpdate" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto" >
+	/* em_cmn_PopMngUser.xml_getUserIdNewUpdate_노찬균  */
+		UPDATE MNGUSER01 
+		SET	"USRPWD" = 'testro01',
+			"USRLEVEL" = #usrLevel#,
+			"USRNAME"=#usrName#,
+			"DELYN"	= 'N',
+			"LASTMODFIID" = #lastModfiId#,
+			"LASTMODFIYMS" = #lastModfiYMS#
+		WHERE  "USRID"=#usrID#
+	</update>
+	
+	<select id="nameSearch" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto" resultClass="com.igo.testro.msg.cmn.dto.PopMngUserDto">
+    /* em_cmn_PopMngUser.xml_nameSearch_노찬균  */
+		select USRNAME
+		from mnguser01
+		where "USRID" = #usrID#
+	</select>
+	
+	<select id="UsrLevelSearch" parameterClass="com.igo.testro.msg.cmn.dto.PopMngUserDto" resultClass="com.igo.testro.msg.cmn.dto.PopMngUserDto">
+    /* em_cmn_PopMngUser.xml_nameSearch_노찬균  */
+		select USRLEVEL
+		from mnguser01
+		where "USRID" = #usrID#
+	</select>
+	
+</sqlMap>

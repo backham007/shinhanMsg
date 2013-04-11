@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE sqlMapConfig PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"    "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+	<settings cacheModelsEnabled="true" enhancementEnabled="true" lazyLoadingEnabled="true" maxRequests="512" maxSessions="128" maxTransactions="32" useStatementNamespaces="true"/>
+	
+	<!--전문관리기-->
+	<sqlMap resource="com/igo/testro/msg/layout/dao/layout.xml"/>
+
+    <sqlMap resource="com/igo/testro/msg/cmn/dao/MyQalty.xml"/>
+    
+    <sqlMap resource="com/igo/testro/msg/cmn/dao/MngUser.xml"/>
+
+    
+    <!--테스트시나리오-->
+    <sqlMap resource="com/igo/testro/msg/tsmng/dao/tsmng.xml"/>
+    <sqlMap resource="com/igo/testro/msg/tsmng/dao/tsList.xml"/>
+    <sqlMap resource="com/igo/testro/msg/tsmng/dao/tsExecute.xml"/>
+    
+    <sqlMap resource="com/igo/testro/cmn/login/dao/login.xml"/>
+    
+	<sqlMap resource="com/igo/testro/msg/cmn/dao/PopMngUser.xml"/>
+	<sqlMap resource="com/igo/testro/msg/cmn/dao/PopMyQalty.xml"/>
+	<sqlMap resource="com/igo/testro/msg/cmn/dao/PopUserPass.xml"/>
+	<sqlMap resource="com/igo/testro/msg/AutoData/dao/Usrinputdatamng.xml"/>
+    
+    <!--테스트케이스 관리-->
+    <sqlMap resource="com/igo/testro/msg/tcmng/dao/tcmng.xml"/>
+    
+    <!--테스트케이스 불러오기-->
+    <sqlMap resource="com/igo/testro/msg/tcmng/dao/tcmngInfo.xml"/>
+    
+    <!--테스트케이스 추가-->
+    <sqlMap resource="com/igo/testro/msg/tcmng/dao/tcmngAdd.xml"/>    
+    
+    <!--체크포인트 관리-->
+    <sqlMap resource="com/igo/testro/msg/tcmng/dao/checkPoint.xml"/> 
+    
+    <!--결함관리-->
+	<sqlMap resource="com/igo/testro/msg/flaw/dao/flaw.xml"/>
+	
+	<!--결함관리-->
+	<sqlMap resource="com/igo/testro/msg/cmn/dao/projPop.xml"/>
+	
+	<!--데이터ID 관리-->
+    <sqlMap resource="com/igo/testro/msg/cmn/dao/mngSeqId.xml"/>
+	
+	<!--통계-->
+    <sqlMap resource="com/igo/testro/msg/statistics/dao/statistics.xml"/>
+	<!--테스트수행현황 조회-->
+    <sqlMap resource="com/igo/testro/msg/exeSts/dao/exests.xml"/>
+    
+    <!-- 결과보고서 -->
+    <sqlMap resource="com/igo/testro/msg/report/dao/report.xml"/>
+    
+    <!-- 테스트예약 실행관리 -->
+    <sqlMap resource="com/igo/testro/msg/schedule/dao/scheduleMng.xml"/>
+    <sqlMap resource="com/igo/testro/msg/cmn/dao/mngCode.xml"/>
+	
+	<!--거래테스트-->
+    <sqlMap resource="com/igo/testro/msg/pretst/dao/pretst.xml"/>
+<!--    나의최근작업조회-->
+    <sqlMap resource="com/igo/testro/msg/myLatestWork/dao/myLatestWork.xml"/>
+    <!--테스트데이터실행-->
+    <sqlMap resource="com/igo/testro/msg/cmn/execute/dao/testDataExecute.xml"/>
+</sqlMapConfig>

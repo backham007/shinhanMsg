@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>testro-web</display-name>
+	
+	<filter>
+        <filter-name>Set Character Encoding</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name> 
+            <param-value>utf-8</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+	    <filter-name>Set Character Encoding</filter-name>
+	    <url-pattern>/*</url-pattern>
+    </filter-mapping>
+	
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>/WEB-INF/applicationContext/cmn/applicationContext*.xml /WEB-INF/applicationContext/msg/applicationContext*.xml</param-value>
+	</context-param>
+	
+    <listener>
+    	<display-name>contextListener</display-name>
+		<listener-class>
+			com.igo.testro.svclistener.init.TestroContextListener
+		</listener-class>
+	</listener>
+	
+	
+	<servlet>
+		<servlet-name>dispatcher</servlet-name>
+		<servlet-class>
+			com.igo.testro.svclistener.TestroDispatcherServlet
+		</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/applicationContext/dispatcher-servlet.xml</param-value>
+		</init-param>
+	</servlet>
+	
+	
+	<servlet-mapping>
+		<servlet-name>dispatcher</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+	
+	<servlet>
+		<servlet-name>gridExcelService</servlet-name>
+		<servlet-class>
+			com.igo.testro.cmn.service.GridExcelService
+		</servlet-class>
+	</servlet>
+	
+	
+	<servlet-mapping>
+		<servlet-name>gridExcelService</servlet-name>
+		<url-pattern>/gridExcelService</url-pattern>
+	</servlet-mapping>
+	
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+	
+	<session-config>
+		<session-timeout>1440</session-timeout>
+	</session-config>
+</web-app>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 스케줄 등록 -->
+<schedule name="msgSchedule" runnable="true">
+	<executeBeanServie name="msgExecuteSchedule" invokeMethod="executeSchedule" ParamDateFormat="yyyyMMddHHmm00" />
+</schedule>

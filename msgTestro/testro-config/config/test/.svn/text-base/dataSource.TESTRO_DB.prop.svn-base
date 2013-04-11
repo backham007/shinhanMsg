@@ -1,0 +1,9 @@
+type=jdbc
+transaction=true
+configLocation=classpath:sql-map-config.xml
+url=jdbc:derby://192.168.0.14:1527/c:/derby/testro_DevDB
+driverClassName=org.apache.derby.jdbc.ClientDriver
+username=TESTRO1
+password=igo123
+initialSize=1
+maxActive=10

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="tsExecute">
+	<!-- 테스트 시나리오 실적 저장 -->
+    <insert id="registerRptSnrio" parameterClass="com.igo.testro.msg.tsmng.dto.RptSnrioBasicDTO">
+        /* msg_tsmng_tsExecute.xml_registerRptSnrio_김기태 */
+        INSERT
+        INTO RPTSNRO01
+        VALUES(
+            #tsSnrioID#
+            , #acmplNth#
+            , #tsSnrioName:VARCHAR#
+            , #tsSnrioDesc:VARCHAR#
+            , #chnlDstcd:CHAR#
+            , #mgrLvelDstcd:CHAR#
+            , #osidOferYn:CHAR#
+            , #connSevrDstcd:CHAR#
+            , #projNo:VARCHAR#
+            , #projName:VARCHAR#
+            , #tstrID:VARCHAR#
+            , #tstrName:VARCHAR#
+            , #rsultSucssYN:CHAR#
+            , #rsultMsg:VARCHAR#
+            , #rsultImgFileYN:CHAR#
+            , #testStartYMS:CHAR#
+            , #testEndYMS:CHAR#
+            , #testStgeName:VARCHAR#
+            , #writeID:VARCHAR#
+            , #writeName:VARCHAR#
+            , #cretnYMS:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:CHAR#
+            , #rmark:VARCHAR#
+        )
+    </insert>
+    
+    <!-- 테스트 시나리오 실적정보 수정 -->
+    <update id="modifyRptSnrio" parameterClass="com.igo.testro.msg.tsmng.dto.RptSnrioBasicDTO">
+        /* msg_tsmng_tsExecute.xml_modifyRptSnrio_김기태 */
+        UPDATE RPTSNRO01
+        SET rsultSucssYN = #rsultSucssYN#
+            , testEndYMS = #testEndYMS#
+        WHERE tsSnrioID = #tsSnrioID#
+            AND acmplNth = #acmplNth#
+    </update>
+    
+    <!-- 다음 테스트 수행회차 조회 -->
+    <select id="getRptSnrioNextAcmplNth" resultClass="Integer">
+        /* msg_tsmng_tsExecute.xml_getRptSnrioNextAcmplNth_김기태 */
+        SELECT MAX(acmplNth)+1 
+        FROM RPTSNRO01
+        WHERE tsSnrioID = #tsSnrioID#
+    </select>
+    
+    <!-- 테스트 시나리오 상세 실적 정보 저장 -->
+    <insert id="registerRptSnrioDetail" parameterClass="com.igo.testro.msg.tsmng.dto.RptSnrioDetailDTO">
+        /* msg_tsmng_tsExecute.xml_registerRptSnrioDetail_김기태 */
+        INSERT
+        INTO RPTSNRO02
+        VALUES(
+            #tsSnrioID#
+            , #acmplNth#
+            , #tsSnrioNO#
+            , #tsCaseID:VARCHAR#
+            , #tsdataID:VARCHAR#
+            , #tsdataName:VARCHAR#
+            , #tsdataAcmplNth:NUMERIC#
+            , #rsultSucssYN:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:CHAR#
+            , #rmark:VARCHAR#
+        )
+    </insert>
+</sqlMap>

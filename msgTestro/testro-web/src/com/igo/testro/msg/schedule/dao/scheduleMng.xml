@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="scheduleMng">
+    
+    <typeAlias alias="scheduleMngDto" type="com.igo.testro.msg.schedule.dto.ScheduleMngDto"/>
+    
+    <select id="getListRegist" resultClass="scheduleMngDto">
+        /* em_schedule_scheduleMng.xml_getListRegist_이강우 */
+        SELECT
+			TSDATAID,
+			JOBSNO,
+			TESTUNITCD,
+			JOBRESRVYMS,
+			JOBRESRVCNT,
+			CONNSEVRDSTCD,
+			TESTNAME,
+			TESTDESC,
+			CRETNYMS,
+			WRITEID,
+			WRITENAME,
+			JOBEXEYMS,
+			ACMPLNTH,
+			JOBSUCSSYN,
+			JOBEXESTUSCD,
+			LASTMODFIID,
+			LASTMODFIYMS
+		FROM TESJOBS01
+		WHERE JOBRESRVYMS = #jobResrvYms#
+    </select>
+    
+    <select id="getListSchedule" resultClass="scheduleMngDto">
+        /* em_schedule_scheduleMng.xml_getListSchedule_이강우 */
+        SELECT
+			TSDATAID,
+			JOBSNO,
+			TESTUNITCD,
+			JOBRESRVYMS,
+			JOBRESRVCNT,
+			CONNSEVRDSTCD,
+			TESTNAME,
+			TESTDESC,
+			CRETNYMS,
+			WRITEID,
+			WRITENAME,
+			JOBEXEYMS,
+			ACMPLNTH,
+			JOBSUCSSYN,
+			JOBEXESTUSCD,
+			LASTMODFIID,
+			LASTMODFIYMS
+		FROM TESJOBS01
+		<dynamic prepend="where">
+			<isNotEmpty property="testUnitCd" prepend="and">
+				TESTUNITCD = #testUnitCd#
+			</isNotEmpty>
+			<isNotEmpty property="tsDataId" prepend="and">
+				TSDATAID = #tsDataId#
+			</isNotEmpty>
+			<isNotEmpty property="jobExeStusCd" prepend="and">
+				JOBEXESTUSCD = #jobExeStusCd#
+			</isNotEmpty>
+			<isNotEmpty property="startJobResrvYms" prepend="and">
+				<![CDATA[JOBRESRVYMS >= #startJobResrvYms#]]>
+			</isNotEmpty>
+			<isNotEmpty property="endJobResrvYms" prepend="and">
+				<![CDATA[JOBRESRVYMS <= #endJobResrvYms#]]>
+			</isNotEmpty>
+			<isNotEmpty property="writeName" prepend="and">
+				WRITENAME = #writeName#
+			</isNotEmpty>		
+		</dynamic>
+		ORDER BY
+			<isNotEmpty property="sidx">
+			$sidx$ $sord$,
+			</isNotEmpty>
+			JOBSNO DESC
+		
+    </select>
+    
+    <select id="getSchedule" resultClass="scheduleMngDto">
+        /* em_schedule_scheduleMng.xml_getSchedule_이강우 */
+        SELECT
+			TSDATAID,
+			JOBSNO,
+			TESTUNITCD,
+			JOBRESRVYMS,
+			JOBRESRVCNT,
+			CONNSEVRDSTCD,
+			TESTNAME,
+			TESTDESC,
+			CRETNYMS,
+			WRITEID,
+			WRITENAME,
+			JOBEXEYMS,
+			ACMPLNTH,
+			JOBSUCSSYN,
+			JOBEXESTUSCD,
+			LASTMODFIID,
+			LASTMODFIYMS
+		FROM TESJOBS01
+		WHERE TSDATAID = #tsDataId#
+			AND JOBSNO = #jobSno#
+    </select>
+    
+    <select id="getListSchedule_total" resultClass="Integer">
+        /* em_schedule_scheduleMng.xml_getListSchedule_total_이강우 */
+        SELECT
+			count(*)
+		FROM TESJOBS01
+		<dynamic prepend="where">
+			<isNotEmpty property="testUnitCd" prepend="and">
+				TESTUNITCD = #testUnitCd#
+			</isNotEmpty>
+			<isNotEmpty property="tsDataId" prepend="and">
+				TSDATAID = #tsDataId#
+			</isNotEmpty>
+			<isNotEmpty property="jobExeStusCd" prepend="and">
+				JOBEXESTUSCD = #jobExeStusCd#
+			</isNotEmpty>
+			<isNotEmpty property="startJobResrvYms" prepend="and">
+				<![CDATA[JOBRESRVYMS >= #startJobResrvYms#]]>
+			</isNotEmpty>
+			<isNotEmpty property="endJobResrvYms" prepend="and">
+				<![CDATA[JOBRESRVYMS <= #endJobResrvYms#]]>
+			</isNotEmpty>
+			<isNotEmpty property="writeName" prepend="and">
+				WRITENAME = #writeName#
+			</isNotEmpty>		
+		</dynamic>
+    </select>
+    
+        
+    <update id="modifyScheduleResult" parameterClass="scheduleMngDto">
+       /* em_schedule_scheduleMng.xml_modifyScheduleResult_이강우 */
+       UPDATE TESJOBS01 SET
+       		<isNotNull property="acmplnTh">
+				ACMPLNTH=#acmplnTh#,
+			</isNotNull>
+			<isNotNull property="jobSucssYn">
+				JOBSUCSSYN=#jobSucssYn#,
+			</isNotNull>
+			<isNotNull property="jobExeYms">
+				JOBEXEYMS=#jobExeYms#, 
+			</isNotNull>
+			JOBEXESTUSCD=#jobExeStusCd#,
+			LASTMODFIYMS=#lastModfiYms#
+		WHERE TSDATAID=#tsDataId#
+			AND JOBSNO=#jobSno#
+    </update>
+    
+    <select id="getListTestCase" resultClass="scheduleMngDto">
+        /* em_schedule_scheduleMng.xml_getListTestCase_이강우 */
+        SELECT TSDATAID,  TESTNAME, TESTDESC, CRETNYMS, TESTUNITCD
+		FROM (
+			SELECT
+				TSCASEID AS TSDATAID,
+				TSCASENAME AS TESTNAME,
+				TSCASEDESC AS TESTDESC,
+				'01' AS TESTUNITCD,
+				CRETNYMS 
+			FROM TESCASE01
+			WHERE DELYN='N'
+			UNION ALL
+			SELECT
+				TSSNRIOID AS TSDATAID,
+				TSSNRIONAME AS TESTNAME,
+				TSSNRIODESC AS TESTDESC,
+				'02' AS TESTUNITCD,
+				CRETNYMS
+			FROM TESSNRO01
+			WHERE DELYN='N'
+		) TES
+		<dynamic prepend="where">
+			<isNotEmpty property="testUnitCd" prepend="and">
+				TESTUNITCD = #testUnitCd#
+			</isNotEmpty>
+			<isNotEmpty property="tsDataId" prepend="and">
+				TSDATAID =#tsDataId#
+			</isNotEmpty>
+			<isNotEmpty property="testName" prepend="and">
+				TESTNAME LIKE #testName#||'%'
+			</isNotEmpty>
+		</dynamic>
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			$sidx$ $sord$
+			</isNotEmpty>
+		</dynamic>
+    </select>
+    
+    <select id="getListTestCase_total" resultClass="Integer">
+        /* em_schedule_scheduleMng.xml_getListTestCase_total_이강우 */
+        SELECT COUNT(*)
+		FROM (
+			SELECT
+				TSCASEID AS TSDATAID,
+				TSCASENAME AS TESTNAME,
+				TSCASEDESC AS TESTDESC,
+				'01' AS TESTUNITCD,
+				CRETNYMS 
+			FROM TESCASE01
+			WHERE DELYN='N'
+			UNION ALL
+			SELECT
+				TSSNRIOID AS TSDATAID,
+				TSSNRIONAME AS TESTNAME,
+				TSSNRIODESC AS TESTDESC,
+				'02' AS TESTUNITCD,
+				CRETNYMS
+			FROM TESSNRO01
+			WHERE DELYN='N'
+		) TES
+		<dynamic prepend="where">
+			<isNotEmpty property="testUnitCd" prepend="and">
+				TESTUNITCD = #testUnitCd#
+			</isNotEmpty>
+			<isNotEmpty property="tsDataId" prepend="and">
+				TSDATAID =#tsDataId#
+			</isNotEmpty>
+			<isNotEmpty property="testName" prepend="and">
+				TESTNAME LIKE #testName#||'%'
+			</isNotEmpty>
+		</dynamic>
+    </select>
+    
+    
+    <insert id="registerSchedule" parameterClass="scheduleMngDto">
+    	/* em_schedule_scheduleMng.xml_registerSchedule_이강우 */
+    	INSERT INTO TESJOBS01 (
+			TSDATAID,
+			JOBSNO,
+			TESTUNITCD,
+			JOBRESRVYMS,
+			JOBRESRVCNT,
+			CONNSEVRDSTCD,
+			TESTNAME,
+			TESTDESC,
+			CRETNYMS,
+			WRITEID,
+			WRITENAME,
+			ACMPLNTH,
+			JOBEXESTUSCD,
+			LASTMODFIID,
+			LASTMODFIYMS
+		) VALUES (
+			#tsDataId#,
+			(SELECT CASE WHEN count(jobSno)=0 THEN 1 ELSE max(jobSno)+1 END FROM TESJOBS01),
+			#testUnitCd#,
+			#jobResrvYms#,
+			#jobResrvCnt#,
+			#connSevrDstCd#,
+			#testName#,
+			#testDesc#,
+			#cretnYms#,
+			#writeId#,
+			#writeName#,
+			0,
+			#jobExeStusCd#,
+			#lastModfiId#,
+			#lastModfiYms#  
+		)
+    </insert>
+    
+    <update id="modifySchedule" parameterClass="scheduleMngDto">
+    	/* em_schedule_scheduleMng.xml_modifySchedule_이강우 */
+       	UPDATE TESJOBS01 SET
+			JOBRESRVYMS=#jobResrvYms#,
+			JOBRESRVCNT=#jobResrvCnt#,
+			CONNSEVRDSTCD=#connSevrDstCd#,
+			JOBEXEYMS='',
+			ACMPLNTH=0,
+			JOBSUCSSYN='',
+			JOBEXESTUSCD='01',
+			LASTMODFIID=#lastModfiId#,
+			LASTMODFIYMS=#lastModfiYms#
+		WHERE TSDATAID=#tsDataId#
+			AND JOBSNO=#jobSno#
+    </update>
+    
+    <delete id="deleteSchedule" parameterClass="scheduleMngDto">
+    	DELETE FROM TESJOBS01 WHERE TSDATAID=#tsDataId# AND JOBSNO=#jobSno#
+    </delete>
+    
+</sqlMap>

@@ -1,0 +1,886 @@
+package com.igo.testro.msg.cmn.execute.biz;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.igo.testro.cmn.login.dto.LoginDto;
+import com.igo.testro.cmn.utils.DateUtil;
+import com.igo.testro.cmn.utils.StringUtil;
+import com.igo.testro.exception.BizException;
+import com.igo.testro.logger.ITestroLogger;
+import com.igo.testro.logger.TestroLogHelper;
+import com.igo.testro.msg.cmn.execute.dao.TestDataExecuteDao;
+import com.igo.testro.msg.cmn.execute.dto.ExecuteDto;
+import com.igo.testro.msg.cmn.execute.dto.RptCheckPointDTO;
+import com.igo.testro.msg.cmn.execute.dto.RptTestDataBasicDTO;
+import com.igo.testro.msg.cmn.execute.dto.RptTestDataDetailDTO;
+import com.igo.testro.msg.layout.biz.ILayoutBiz;
+import com.igo.testro.msg.layout.dto.LayoutDetailDto;
+import com.igo.testro.msg.layout.dto.LayoutDto;
+import com.igo.testro.msg.pretst.dto.TestDataDetailDto;
+import com.igo.testro.msg.pretst.dto.TestDataDto;
+import com.igo.testro.msg.tcmng.dao.CheckPointDao;
+import com.igo.testro.msg.tcmng.dto.CheckPointDTO;
+import com.igo.testro.msg.tsmng.biz.Filtering;
+import com.igo.testro.msg.tsmng.biz.TsMngBiz;
+import com.igo.testro.msg.tsmng.dto.IODataUseDTO;
+import com.igo.testro.msg.tsmng.dto.RptSnrioBasicDTO;
+import com.igo.testro.msg.tsmng.dto.RptSnrioDetailDTO;
+
+/**
+ * <p>
+ * 프로그램명:TestDataExecuteBiz.java<br/>
+ * 설명 : 테스트 데이터 실행 Biz<br/>
+ * 변경이력<br/>
+ * <ul>
+ *	  <li>2012. 3. 7. : 김기태 : 최초작성
+ * </ul> 
+ * </p>
+ */
+public class TestDataExecuteBiz {
+	final ITestroLogger logger = TestroLogHelper.getBiz();
+	
+	@Autowired
+	private TestDataExecuteDao testDataExecuteDao;
+	@Autowired
+	private TsMngBiz tsMngBiz;
+	@Autowired
+	private IExecuteBiz executeBiz;
+	@Autowired
+	private CheckPointDao checkPointDao;
+	@Autowired
+	private ILayoutBiz layoutBiz;
+	static String[] FLDTYPE = {"text","num","hex"};	// 필드타입
+	/**
+	 * <p>
+	 * 테스트 데이터 실행
+	 * <p>
+	 * @param testDataDto - 테스트 데이터 정보
+	 * @param loginDto - 로그인 사용자 정보
+	 * @return 테스트데이터 실적정보
+	 */
+	@Transactional(propagation = Propagation.REQUIRED)
+	public synchronized RptTestDataBasicDTO executeTestData(TestDataDto testDataDto, LoginDto loginDto) {
+		String tsdataID = testDataDto.getTsdataID();
+		
+		RptTestDataBasicDTO rptTestDataBasicDTO = new RptTestDataBasicDTO();
+		
+		try {
+			String loginUsrId = loginDto.getUsrid();
+			String loginUsrName = loginDto.getUsrname();
+			String currentDate = DateUtil.getDateString();
+			
+			//출력
+			ExecuteDto executeDto = executeBiz.mciExecute(loginDto.getConnsevrdstcd(), testDataDto.getChnlDstcd(), testDataDto.getTranCd(), testDataDto);
+			List<TestDataDetailDto> inputDataDetailDtos = new ArrayList<TestDataDetailDto>();
+			List<TestDataDetailDto> outputDataDetailDtos = new ArrayList<TestDataDetailDto>();
+			if(executeDto.getInputDto() != null){
+				if(executeDto.getInputDto().getHeaderList() != null){
+					inputDataDetailDtos.addAll(executeDto.getInputDto().getHeaderList());
+				}
+				if(executeDto.getInputDto().getInviList() != null){
+					inputDataDetailDtos.addAll(executeDto.getInputDto().getInviList());
+				}
+			}
+			if(executeDto.getOutputDto() != null){
+				if(executeDto.getOutputDto().getHeaderList() != null){
+					outputDataDetailDtos.addAll(executeDto.getOutputDto().getHeaderList());
+				}
+				if(executeDto.getOutputDto().getInviList() != null){
+					outputDataDetailDtos.addAll(executeDto.getOutputDto().getInviList());
+				}
+			}
+			
+			int nextAcmplNth = testDataExecuteDao.getRptDataNextAcmplNth(tsdataID);
+			
+			//테스트 데이터 실적
+			BeanUtils.copyProperties(rptTestDataBasicDTO, testDataDto);
+			rptTestDataBasicDTO.setAcmplNth(nextAcmplNth);
+			rptTestDataBasicDTO.setScriptID(testDataDto.getScrptID());
+			rptTestDataBasicDTO.setProjNO(loginDto.getProjno());
+			rptTestDataBasicDTO.setProjName(loginDto.getProjname());
+			rptTestDataBasicDTO.setTstrID(loginUsrId);
+			rptTestDataBasicDTO.setTstrName(loginUsrName);
+			rptTestDataBasicDTO.setRsultSucssYN(executeDto.getRsultSucssYn());
+			rptTestDataBasicDTO.setRsultMsg(executeDto.getRsultMsg());
+			rptTestDataBasicDTO.setRsultImgFileYN("");
+			rptTestDataBasicDTO.setTestStartYMS(executeDto.getStartTime().replaceAll("-", "").replaceAll(":", "").replaceAll(" ", ""));
+			rptTestDataBasicDTO.setTestEndYMS(executeDto.getEndTime().replaceAll("-", "").replaceAll(":", "").replaceAll(" ", ""));
+			rptTestDataBasicDTO.setElapsedTime(executeDto.getElapsedTime());
+			rptTestDataBasicDTO.setTestStgeName(loginDto.getTeststgename());
+			rptTestDataBasicDTO.setWriteID(loginUsrId);
+			rptTestDataBasicDTO.setWriteName(loginUsrName);
+			rptTestDataBasicDTO.setCretnYMS(currentDate);
+			rptTestDataBasicDTO.setLastModfiID(loginUsrId);
+			rptTestDataBasicDTO.setLastModfiYMS(currentDate);
+			rptTestDataBasicDTO.setRmark("");
+			rptTestDataBasicDTO.setInputRptTestDataDetailDTOs(new ArrayList<RptTestDataDetailDTO>());
+			rptTestDataBasicDTO.setOutputRptTestDataDetailDTOs(new ArrayList<RptTestDataDetailDTO>());
+			rptTestDataBasicDTO.setRptCheckPointDTOs(new ArrayList<RptCheckPointDTO>());
+			
+			for(TestDataDetailDto detailDto : inputDataDetailDtos){
+				RptTestDataDetailDTO rptTestDataDetailDTO = new RptTestDataDetailDTO();
+				BeanUtils.copyProperties(rptTestDataDetailDTO, detailDto);
+				rptTestDataDetailDTO.setAcmplNth(nextAcmplNth);
+				rptTestDataDetailDTO.setLastModfiID(loginUsrId);
+				rptTestDataDetailDTO.setLastModfiYMS(currentDate);
+				rptTestDataDetailDTO.setRmark("");
+				
+				rptTestDataBasicDTO.getInputRptTestDataDetailDTOs().add(rptTestDataDetailDTO);
+			}
+			
+			for(TestDataDetailDto detailDto : outputDataDetailDtos){
+				RptTestDataDetailDTO rptTestDataDetailDTO = new RptTestDataDetailDTO();
+				BeanUtils.copyProperties(rptTestDataDetailDTO, detailDto);
+				rptTestDataDetailDTO.setTsdataID(rptTestDataBasicDTO.getTsdataID());
+				rptTestDataDetailDTO.setAcmplNth(nextAcmplNth);
+				rptTestDataDetailDTO.setLastModfiID(loginUsrId);
+				rptTestDataDetailDTO.setLastModfiYMS(currentDate);
+				rptTestDataDetailDTO.setRmark("");
+				
+				rptTestDataBasicDTO.getOutputRptTestDataDetailDTOs().add(rptTestDataDetailDTO);
+			}
+			
+			//거래결과 성공여부
+			String successYn = executeDto.getRsultSucssYn();
+			
+			//체크포인트
+			String checkPointResult = this.executeCheckPoint(rptTestDataBasicDTO, outputDataDetailDtos, loginDto, currentDate);
+			
+			//실행 성공 실패여부 저장
+			if(checkPointResult == null){
+				rptTestDataBasicDTO.setRsultSucssYN(successYn);
+			}else{
+				rptTestDataBasicDTO.setRsultSucssYN(checkPointResult);
+				if("Y".equals(checkPointResult)){
+					rptTestDataBasicDTO.setRsultMsg("테스트 성공");
+				} else {
+					rptTestDataBasicDTO.setRsultMsg("테스트 실패");
+				}
+			}
+			
+			//DB insert 작업
+			testDataExecuteDao.registerRptTestDataBasic(rptTestDataBasicDTO);
+			for(RptTestDataDetailDTO dto : rptTestDataBasicDTO.getInputRptTestDataDetailDTOs()){
+				testDataExecuteDao.registerRptTestDataDetail(dto);
+			}
+			for(RptTestDataDetailDTO dto : rptTestDataBasicDTO.getOutputRptTestDataDetailDTOs()){
+				testDataExecuteDao.registerRptTestDataDetail2(dto);
+			}
+			for(RptCheckPointDTO dto : rptTestDataBasicDTO.getRptCheckPointDTOs()){
+				testDataExecuteDao.registerRptCheckPoint(dto);
+			}
+		} catch (IllegalAccessException e) {
+			logger.error("", e);
+			throw new BizException("MSG_EXECUT0001","", e);
+		} catch (InvocationTargetException e) {
+			logger.error("", e);
+			throw new BizException("MSG_EXECUT0001","", e);
+		}
+		return rptTestDataBasicDTO;
+	}
+	
+	
+	/**
+	 * <p>
+	 * 체크포인트를 체크한다.
+	 * <p>
+	 * @param rptTestDataBasicDTO - 테스트데이터 실적 정보
+	 * @param outputDataDetailDtos - 테스트 데이터 출력상세 정보
+	 * @param loginDto - 로그인사용자 정보
+	 * @param currentDate - 현재 일시
+	 * @return 체크 성공실패 여부
+	 */
+	private String executeCheckPoint(
+			RptTestDataBasicDTO rptTestDataBasicDTO
+			, List<TestDataDetailDto> outputDataDetailDtos
+			, LoginDto loginDto
+			, String currentDate) {
+		
+		String successYn = null;
+		
+		String tsdataID = rptTestDataBasicDTO.getTsdataID();
+		long nextAcmplNth = rptTestDataBasicDTO.getAcmplNth();
+		
+		String loginUsrId = loginDto.getUsrid();
+		String loginUsrName = loginDto.getUsrname();
+		
+		List<CheckPointDTO> checkPointDTOs = checkPointDao.getListCheckPoint(tsdataID);
+		
+		try {
+			for(CheckPointDTO checkPointDTO : checkPointDTOs){
+				String fldName = StringUtil.nvl(checkPointDTO.getTsdataFldName(), "").trim();
+				String rptCntName = StringUtil.nvl(checkPointDTO.getRptCntName(), "").trim();
+				String rptName= StringUtil.nvl(checkPointDTO.getRptName(), "").trim();
+				String rptCnt = StringUtil.nvl(checkPointDTO.getRptCnt(), "").trim();
+				
+				//반복부 체크포인트인지 체크
+				boolean isRpt = !"".equals(rptCntName) || !"".equals(rptName);
+				
+				RptCheckPointDTO rptCheckPointDTO = new RptCheckPointDTO();
+				BeanUtils.copyProperties(rptCheckPointDTO, checkPointDTO);
+				rptCheckPointDTO.setAcmplNth(nextAcmplNth);
+				rptCheckPointDTO.setWriteID(loginUsrId);
+				rptCheckPointDTO.setWriteName(loginUsrName);
+				rptCheckPointDTO.setCretnYMS(currentDate);
+				rptCheckPointDTO.setLastModfiID(loginUsrId);
+				rptCheckPointDTO.setLastModfiYMS(currentDate);
+				
+				int i = 0;
+				for( ; i < outputDataDetailDtos.size() ; i++){
+					TestDataDetailDto outputDataDetailDto = outputDataDetailDtos.get(i);
+					//맞지않는 테스트데이터는 건너뛴다.					
+					if(!fldName.equals(outputDataDetailDto.getTsdataFldName())) continue;
+					if(isRpt){
+						if(!"".equals(rptCntName)){
+							if(!rptCntName.equals(outputDataDetailDto.getRptCntName().trim())) continue;
+						}else{
+							if(!rptName.equals(outputDataDetailDto.getRptName().trim()) || !rptCnt.equals(outputDataDetailDto.getRptCnt().trim())) continue;
+						}
+					}
+					
+					rptCheckPointDTO.setChkPointOuptCtnt(outputDataDetailDto.getTsdataFldData());
+					
+					//체크포인트 설정여부확인
+					if("Y".equals(rptCheckPointDTO.getChkYN())){
+						
+						//문자형 전문데이터는 trim을 하고 숫자형데이터는 trim과 파싱을 한후 체크포인트 실행
+						String fldData = outputDataDetailDto.getTsdataFldData().trim();
+						if(FLDTYPE[1].equals(outputDataDetailDto.getTscsFldType())){
+							if(outputDataDetailDto.getTscsFldSizeCnt().indexOf(".") == -1){
+								if(fldData.charAt(0) == '+' || fldData.charAt(0) == '-'){
+									fldData = fldData.charAt(0) + Integer.valueOf(fldData.substring(1).trim()).toString();
+								} else {
+									fldData = Integer.valueOf(fldData).toString();
+								}
+							} else {
+								if(fldData.charAt(0) == '+' || fldData.charAt(0) == '-'){
+									fldData = fldData.charAt(0) + Double.valueOf(fldData.substring(1).trim()).toString();
+								} else {
+									fldData = Double.valueOf(fldData).toString();
+								}
+							}
+						}
+						
+						try{
+						
+							if(rptCheckPointDTO.getChkPointExpcCtnt() != null && 
+									(rptCheckPointDTO.getChkPointExpcCtnt().trim().equals(fldData) || 
+									 Double.valueOf(rptCheckPointDTO.getChkPointExpcCtnt().trim()).toString().equals(fldData))){
+								rptCheckPointDTO.setChkPointSucssYN("Y");
+								if(successYn == null) successYn = "Y";
+							} else if(rptCheckPointDTO.getChkPointExpcCtnt() == null && "".equals(fldData)){
+								rptCheckPointDTO.setChkPointSucssYN("Y");
+								if(successYn == null) successYn = "Y";
+							} else {
+								rptCheckPointDTO.setChkPointSucssYN("N");
+								successYn = "N";
+							}
+						
+						} catch(NumberFormatException e){
+							rptCheckPointDTO.setChkPointSucssYN("N");
+							successYn = "N";
+						}
+					}else{
+						rptCheckPointDTO.setChkPointSucssYN("");
+					}
+					break;
+				}
+				
+				//체크포인트 필드를 찾지 못했을경우
+				if(i == outputDataDetailDtos.size() && "Y".equals(checkPointDTO.getChkYN())){
+					rptCheckPointDTO.setChkPointSucssYN("N");
+					successYn = "N";
+				}
+				
+				rptTestDataBasicDTO.getRptCheckPointDTOs().add(rptCheckPointDTO);
+			}
+			
+		} catch (IllegalAccessException e) {
+			logger.error("", e);
+			throw new BizException("MSG_EXECUT0001","", e);
+		} catch (InvocationTargetException e) {
+			logger.error("", e);
+			throw new BizException("MSG_EXECUT0001","", e);
+		}
+		
+		return successYn;
+	}
+
+
+	/**
+	 * <p>
+	 * 테스트 데이터 실행
+	 * <p>
+	 * @param tsdataID - 테스트데이터 ID
+	 * @param loginDto - 로그인 사용자 정보
+	 * @return 테스트데이터 실적정보
+	 */
+	public RptTestDataBasicDTO executeTestData(String tsdataID, LoginDto loginDto) {
+		//입력
+		TestDataDto testDataDto = tsMngBiz.getTdInfo(tsdataID);
+		return this.executeTestData(testDataDto, loginDto);
+	}
+
+	/**
+	 * <p>
+	 * 테스트 데이터 실행
+	 * <p>
+	 * @param tsdataID - 테스트데이터 ID
+	 * @param loginDto - 로그인 사용자 정보
+	 * @param rptSnrioBasicDTO - 테스트시나리오 실적 정보
+	 * @param ioDataUseDTOs - 입출력값활용 정보
+	 * @return 테스트데이터 실적정보
+	 */
+	public RptTestDataBasicDTO executeTestData(String tsdataID, LoginDto loginDto, RptSnrioBasicDTO rptSnrioBasicDTO, List<IODataUseDTO> ioDataUseDTOs){
+		//입력
+		TestDataDto testDataDto = tsMngBiz.getTdInfo(tsdataID);
+		
+		List<RptSnrioDetailDTO> rptTestDataDetailDTOs = rptSnrioBasicDTO.getRptSnrioDetailDTOs();
+		
+		for(IODataUseDTO ioDataUseDTO : ioDataUseDTOs){
+			String tscsFldAttrib = ioDataUseDTO.getTscsFldAttrib().trim();
+			String preSnrioNO = ioDataUseDTO.getPreSnrioNO().trim();
+			String preFldDiv = ioDataUseDTO.getPreFldDiv().trim();
+			String preFldName = ioDataUseDTO.getPreFldName().trim();
+			String preFldAttrib = ioDataUseDTO.getPreFldAttrib().trim();
+			String preFldRptName = "";
+			if(ioDataUseDTO.getPreFldRptName() != null)preFldRptName = ioDataUseDTO.getPreFldRptName().trim();
+			String preFldRptCnt = "";
+			if(ioDataUseDTO.getPreFldRptCnt() != null)preFldRptCnt = ioDataUseDTO.getPreFldRptCnt().trim();
+			String useFldDiv = ioDataUseDTO.getUseFldDiv().trim();
+			String useFldName = ioDataUseDTO.getUseFldName().trim();
+			String useFldAttrib = ioDataUseDTO.getUseFldAttrib().trim();
+			String useFldRptName = "";
+			if(ioDataUseDTO.getUseFldRptName() != null)useFldRptName = ioDataUseDTO.getUseFldRptName().trim();
+			String useFldRptCnt = "";
+			if(ioDataUseDTO.getUseFldRptCnt() != null)useFldRptCnt = ioDataUseDTO.getUseFldRptCnt().trim();
+			String cndnStylCtnt = "";
+			if(ioDataUseDTO.getCndnStylCtnt() != null)cndnStylCtnt = ioDataUseDTO.getCndnStylCtnt().trim();
+			
+			//입출력값 구분후 사용하려는 입출력값이 있는 데이터 실적을 가져온다.
+			List<RptTestDataDetailDTO> preDtos = null;
+			if("05".equals(tscsFldAttrib)){	//입력값 활용
+				preDtos = rptTestDataDetailDTOs.get(Integer.parseInt(preSnrioNO)-1).getInputRptTestDataDetailDTOs();
+			}else if("06".equals(tscsFldAttrib)){	//출력값 활용
+				preDtos = rptTestDataDetailDTOs.get(Integer.parseInt(preSnrioNO)-1).getOutputRptTestDataDetailDTOs();
+			}
+			
+			//반복부 전체활용
+			if("03".equals(preFldAttrib) && "03".equals(useFldAttrib) && "".equals(preFldRptCnt) && "".equals(useFldRptCnt)) {
+				
+				String preRptName = null;
+				String preRptCnt = null;
+				String useRptName = null;
+				List<RptTestDataDetailDTO> copyRptList = new ArrayList<RptTestDataDetailDTO>();
+				
+				//필드이름을 비교하여 사용하려는 입출력값을 가져온다.
+				for(RptTestDataDetailDTO preDto : preDtos){
+					if(preFldDiv.equals(preDto.getTscsFldDiv()) &&
+						preFldName.equals(preDto.getTsdataFldName()) &&
+						preFldAttrib.equals(preDto.getTscsFldAttrib())){
+						
+						preRptName = preDto.getRptCntName();
+						preRptCnt = preDto.getTsdataFldData();
+					} else if(preDto.getRptName() != null && preDto.getRptName().equals(preRptName)){
+						copyRptList.add(preDto);
+					}
+				}
+				
+				if(preRptCnt == null) continue;
+				
+				List<TestDataDetailDto> useDtos = new ArrayList<TestDataDetailDto>();
+				if("01".equals(useFldDiv)) useDtos = testDataDto.getHeaderList();
+				else useDtos = testDataDto.getInviList();
+				
+				//테스트 데이터에 필드이름을 비교하여 입력값을 변경한다.
+				
+				//반복부회차필드 변경
+				//반복부회차 필드의 회차데이터를 세팅하고 해당 반복부 필드를 삭제한다
+				for(int i = 0 ; i < useDtos.size() ; i++){
+					TestDataDetailDto useDto = useDtos.get(i);
+					
+					if(useFldDiv.equals(useDto.getTscsFldDiv()) &&
+						useFldName.equals(useDto.getTsdataFldName()) &&
+						useFldAttrib.equals(useDto.getTscsFldAttrib())){
+						
+						useDto.setTsdataFldData(preRptCnt);
+						useRptName = useDto.getRptCntName();
+					} else if(useRptName != null && useRptName.equals(useDto.getRptName())){
+						useDtos.remove(i);
+						i--;
+					}
+				}
+				
+				//반복부 데이터 입력
+				int rptCnt = Integer.parseInt(preRptCnt);
+				
+				LayoutDto layoutDto = layoutBiz.getLayout(testDataDto.getChnlDstcd(), testDataDto.getTranCd(), "I");
+				
+				List<LayoutDetailDto> layoutDetailDtoList = new ArrayList<LayoutDetailDto>();
+				if("01".equals(useFldDiv)) layoutDetailDtoList = layoutDto.getHeaderList();
+				else layoutDetailDtoList = layoutDto.getInviList();
+				
+				int rptStrLayoutIdx = -1;
+				
+				//레이아웃에서 반복부첫필드의 이전필드를 찾는다
+				for(int i = 0 ; i < layoutDetailDtoList.size() ; i++){
+					LayoutDetailDto layoutDetailDto = layoutDetailDtoList.get(i);
+					if(useFldName.equals(layoutDetailDto.getRptName())){
+						rptStrLayoutIdx = i - 1;						
+						break;
+					}
+				}
+				
+				if(rptStrLayoutIdx != -1){
+					
+					int tsdataNO = 1;
+					if("02".equals(useFldDiv)) tsdataNO = testDataDto.getHeaderList().size() + 1;
+					
+					//반복부 첫필드의 이전필드 레이아웃
+					LayoutDetailDto rptStrLayout = layoutDetailDtoList.get(rptStrLayoutIdx);
+					
+					for(int i = 0 ; i < useDtos.size() ; i++){
+						TestDataDetailDto useDto = useDtos.get(i);
+						if(rptStrLayout.getFldName().equals(useDto.getTsdataFldName())){
+							
+							int rptDataIdx = i + 1;
+							tsdataNO++;
+							
+							//반복회차만큼 반복한다
+							for(int cnt = 1 ; cnt <= rptCnt ; cnt++){
+								for(int k = rptStrLayoutIdx + 1; k < layoutDetailDtoList.size() ; k++){
+									
+									LayoutDetailDto layoutDetailDto = layoutDetailDtoList.get(k);
+									if(!rptStrLayout.getFldName().equals(layoutDetailDto.getRptName())){
+										break;
+									}
+									
+									int z;
+									for(z = 0 ; z < copyRptList.size() ; z++){
+										
+										RptTestDataDetailDTO dto = copyRptList.get(z);
+										
+										if(dto.getTsdataFldName().equals(layoutDetailDto.getFldName()) &&
+												cnt == Integer.parseInt(dto.getRptCnt().trim())){
+											
+											TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+											
+											dataDetailDto.setTsdataID(tsdataID);
+											dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+											dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+											dataDetailDto.setTsdataFldData(dto.getTsdataFldData());
+											dataDetailDto.setTscsFldDiv(useFldDiv);
+											dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+											dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+											dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+											dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+											dataDetailDto.setRptName(useRptName);
+											dataDetailDto.setRptCnt(String.valueOf(cnt));												
+											
+											useDtos.add(rptDataIdx++, dataDetailDto);
+											
+											break;
+										}
+									}
+									
+									if(z == copyRptList.size()){
+										TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+										
+										dataDetailDto.setTsdataID(tsdataID);
+										dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+										dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+										dataDetailDto.setTsdataFldData("");
+										dataDetailDto.setTscsFldDiv(useFldDiv);
+										dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+										dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+										dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+										dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+										dataDetailDto.setRptName(useRptName);
+										dataDetailDto.setRptCnt(String.valueOf(cnt));
+										
+										useDtos.add(rptDataIdx++, dataDetailDto);
+									}
+								}
+							}
+							
+							i = rptDataIdx - 1;
+						} else {
+							useDto.setTsdataNO(String.valueOf(tsdataNO++));
+						}
+					}
+					
+					if("01".equals(useFldDiv)){
+						useDtos = testDataDto.getInviList();
+						for (TestDataDetailDto useDto : useDtos) {
+							useDto.setTsdataNO(String.valueOf(tsdataNO++));
+						}						
+					}
+				}
+			}
+			
+			//반복부행 지정 활용
+			else if("03".equals(preFldAttrib) && "03".equals(useFldAttrib) && !"".equals(preFldRptCnt) && !"".equals(useFldRptCnt)){
+
+				//반복회차를 입력하지 않았을 경우 회차기본값 1로 세팅
+				if("".equals(preFldRptCnt)) preFldRptCnt = "1";
+				if("".equals(useFldRptCnt)) useFldRptCnt = "1";
+				
+				String preRptFldName = null;
+				String preRptName = null;
+				String preRptCnt = null;
+				String useRptName = null;
+				List<RptTestDataDetailDTO> copyRptList = new ArrayList<RptTestDataDetailDTO>();
+				
+				//필드이름을 비교하여 사용하려는 입출력값을 가져온다.
+				for(RptTestDataDetailDTO preDto : preDtos){
+					if(preFldDiv.equals(preDto.getTscsFldDiv()) &&
+						preFldName.equals(preDto.getTsdataFldName()) &&
+						preFldAttrib.equals(preDto.getTscsFldAttrib())){
+						
+						preRptFldName = preDto.getTsdataFldName();
+						preRptName = preDto.getRptCntName();
+						preRptCnt = preDto.getTsdataFldData();
+					} else if(preDto.getRptName() != null && preDto.getRptName().equals(preRptName)
+							&& preFldRptCnt.equals(preDto.getRptCnt().trim())){
+						copyRptList.add(preDto);
+					}
+				}
+				
+				if(preRptCnt == null) continue;
+				
+				List<TestDataDetailDto> useDtos = new ArrayList<TestDataDetailDto>();
+				if("01".equals(useFldDiv)) useDtos = testDataDto.getHeaderList();
+				else useDtos = testDataDto.getInviList();
+				
+				//테스트 데이터에 필드이름을 비교하여 입력값을 변경한다.
+				int rptCnt = Integer.parseInt(preRptCnt);
+				int inputDataRptCnt = 0; 
+				
+				//반복부회차필드 변경
+				//반복부회차 필드의 회차데이터를 세팅하고 해당 반복부 필드를 삭제한다
+				for(int i = 0 ; i < useDtos.size() ; i++){
+					TestDataDetailDto useDto = useDtos.get(i);
+					
+					if(useFldName.equals(useDto.getTsdataFldName()) &&
+						useFldAttrib.equals(useDto.getTscsFldAttrib())){
+						
+						inputDataRptCnt = Integer.parseInt(useDto.getTsdataFldData());
+						if(Integer.parseInt(useFldRptCnt) > Integer.parseInt(useDto.getTsdataFldData())) useDto.setTsdataFldData(useFldRptCnt);
+						
+						rptCnt = Integer.parseInt(useDto.getTsdataFldData());
+						
+						useRptName = useDto.getRptCntName();
+					} else if(useRptName != null && useRptName.equals(useDto.getRptName())
+							&& useFldRptCnt.equals(useDto.getRptCnt().trim())){
+						useDtos.remove(i);
+						i--;
+					}
+				}
+				
+				//반복부 데이터 입력
+				
+				LayoutDto layoutDto = layoutBiz.getLayout(testDataDto.getChnlDstcd(), testDataDto.getTranCd(), "I");
+				
+				List<LayoutDetailDto> layoutDetailDtoList = new ArrayList<LayoutDetailDto>();
+				if("01".equals(useFldDiv)) layoutDetailDtoList = layoutDto.getHeaderList();
+				else layoutDetailDtoList = layoutDto.getInviList();
+				
+				int rptStrLayoutIdx = -1;
+				
+				//레이아웃에서 반복부첫필드의 이전필드를 찾는다
+				for(int i = 0 ; i < layoutDetailDtoList.size() ; i++){
+					LayoutDetailDto layoutDetailDto = layoutDetailDtoList.get(i);
+					if(preRptFldName.equals(layoutDetailDto.getRptName())){
+						rptStrLayoutIdx = i - 1;						
+						break;
+					}
+				}
+				
+				if(rptStrLayoutIdx != -1){
+					
+					int tsdataNO = 1;
+					if("02".equals(useFldDiv)) tsdataNO = testDataDto.getHeaderList().size() + 1;
+					
+					//반복부 첫필드의 이전필드 레이아웃
+					LayoutDetailDto rptStrLayout = layoutDetailDtoList.get(rptStrLayoutIdx);
+					
+					for(int i = 0 ; i < useDtos.size() ; i++){
+						TestDataDetailDto useDto = useDtos.get(i);
+						if(rptStrLayout.getFldName().equals(useDto.getTsdataFldName())){
+							
+							int rptDataIdx = i + 1;
+							tsdataNO++;
+							
+							//반복회차만큼 반복한다
+							for(int cnt = 1 ; cnt <= rptCnt ; cnt++){
+								for(int k = rptStrLayoutIdx + 1; k < layoutDetailDtoList.size() ; k++){
+									
+									LayoutDetailDto layoutDetailDto = layoutDetailDtoList.get(k);
+									if(!rptStrLayout.getFldName().equals(layoutDetailDto.getRptName())){
+										break;
+									}
+									
+									if(cnt == Integer.parseInt(useFldRptCnt)){	//입력값으로 활용하는 회차일 경우
+										int z;
+										for(z = 0 ; z < copyRptList.size() ; z++){
+											
+											RptTestDataDetailDTO dto = copyRptList.get(z);
+											
+											if(dto.getTsdataFldName().equals(layoutDetailDto.getFldName())){
+												
+												TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+												
+												dataDetailDto.setTsdataID(tsdataID);
+												dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+												dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+												dataDetailDto.setTsdataFldData(dto.getTsdataFldData());
+												dataDetailDto.setTscsFldDiv(useFldDiv);
+												dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+												dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+												dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+												dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+												dataDetailDto.setRptName(useRptName);
+												dataDetailDto.setRptCnt(String.valueOf(cnt));												
+												
+												useDtos.add(rptDataIdx++, dataDetailDto);
+												
+												break;
+											}
+										}
+										
+										if(z == copyRptList.size()){
+											TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+											
+											dataDetailDto.setTsdataID(tsdataID);
+											dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+											dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+											dataDetailDto.setTsdataFldData("");
+											dataDetailDto.setTscsFldDiv(useFldDiv);
+											dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+											dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+											dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+											dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+											dataDetailDto.setRptName(useRptName);
+											dataDetailDto.setRptCnt(String.valueOf(cnt));
+											
+											useDtos.add(rptDataIdx++, dataDetailDto);
+										}
+									} else if(cnt > inputDataRptCnt){
+										int z;
+										for(z = 0 ; z < useDtos.size() ; z++){
+											
+											TestDataDetailDto dto = useDtos.get(z);
+											
+											if(dto.getTsdataFldName().equals(layoutDetailDto.getFldName()) &&
+													cnt == Integer.parseInt(dto.getRptCnt().trim())){
+												
+												TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+												
+												dataDetailDto.setTsdataID(tsdataID);
+												dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+												dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+												dataDetailDto.setTsdataFldData(dto.getTsdataFldData());
+												dataDetailDto.setTscsFldDiv(useFldDiv);
+												dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+												dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+												dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+												dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+												dataDetailDto.setRptName(useRptName);
+												dataDetailDto.setRptCnt(String.valueOf(cnt));												
+												
+												useDtos.add(rptDataIdx++, dataDetailDto);
+												
+												break;
+											}
+										}
+										
+										if(z == useDtos.size()){
+											TestDataDetailDto dataDetailDto = new TestDataDetailDto();
+											
+											dataDetailDto.setTsdataID(tsdataID);
+											dataDetailDto.setTsdataNO(String.valueOf(tsdataNO++));
+											dataDetailDto.setTsdataFldName(layoutDetailDto.getFldName());
+											dataDetailDto.setTsdataFldData("");
+											dataDetailDto.setTscsFldDiv(useFldDiv);
+											dataDetailDto.setTscsFldType(layoutDetailDto.getFldType());
+											dataDetailDto.setTscsFldAttrib(layoutDetailDto.getFldAttrib());
+											dataDetailDto.setTscsFldSizeCnt(layoutDetailDto.getTscsFldSize());
+											dataDetailDto.setTscsFldDesc(layoutDetailDto.getTscsFldDesc());
+											dataDetailDto.setRptName(useRptName);
+											dataDetailDto.setRptCnt(String.valueOf(cnt));
+											
+											useDtos.add(rptDataIdx++, dataDetailDto);
+										}
+									} else {
+										useDtos.get(rptDataIdx++).setTsdataNO(String.valueOf(tsdataNO++));
+									}
+								}
+							}
+							
+							i = rptDataIdx - 1;
+						} else {
+							useDto.setTsdataNO(String.valueOf(tsdataNO++));
+						}
+					}
+					
+					if("01".equals(useFldDiv)){
+						useDtos = testDataDto.getInviList();
+						for (TestDataDetailDto useDto : useDtos) {
+							useDto.setTsdataNO(String.valueOf(tsdataNO++));
+						}						
+					}
+				}
+			}
+			
+			//반복부필드 전체 활용
+			else if("04".equals(preFldAttrib) && "04".equals(useFldAttrib)){
+				List<RptTestDataDetailDTO> copyRptList = new ArrayList<RptTestDataDetailDTO>();
+				
+				//필드이름을 비교하여 사용하려는 입출력값을 가져온다.
+				for(RptTestDataDetailDTO preDto : preDtos){
+					if(preFldRptName.equals(preDto.getRptName()) &&
+					   preFldName.equals(preDto.getTsdataFldName())){
+						copyRptList.add(preDto);
+					}
+				}
+				
+				if(copyRptList.size() == 0) continue;
+				
+				List<TestDataDetailDto> useDtos = new ArrayList<TestDataDetailDto>();
+				if("01".equals(useFldDiv)) useDtos = testDataDto.getHeaderList();
+				else useDtos = testDataDto.getInviList();
+				
+				//테스트 데이터에 필드이름을 비교하여 입력값을 변경한다.
+				for(RptTestDataDetailDTO preDto : copyRptList){
+					for(TestDataDetailDto useDto : useDtos){						
+						if(useFldName.equals(useDto.getTsdataFldName()) &&
+						   useFldRptName.equals(useDto.getRptName()) &&
+						   preDto.getRptCnt().trim().equals(useDto.getRptCnt().trim())){
+							
+							useDto.setTsdataFldData(preDto.getTsdataFldData());
+							continue;
+						}
+					}
+				}
+			}
+			
+			//단건 활용
+			else if(!"03".equals(preFldAttrib) && !"03".equals(useFldAttrib) && !"05".equals(useFldAttrib)){
+				//필드이름을 비교하여 사용하려는 입출력값을 가져온다.
+				String changeData = null;
+				for(RptTestDataDetailDTO preDto : preDtos){
+					if(preFldDiv.equals(preDto.getTscsFldDiv()) &&
+						preFldName.equals(preDto.getTsdataFldName()) &&
+						(preFldRptName.equals(preDto.getRptName()) ||
+								(StringUtil.isEmptyString(preFldRptName) && StringUtil.isEmptyString(preDto.getRptName()))) &&
+						(preFldRptCnt.equals(preDto.getRptCnt()) ||
+							(StringUtil.isEmptyString(preFldRptCnt) && StringUtil.isEmptyString(preDto.getRptCnt())))){
+							
+						changeData = preDto.getTsdataFldData();
+						break;
+					}
+				}
+				
+				
+				if(changeData == null) continue;
+				
+				List<TestDataDetailDto> useDtos = new ArrayList<TestDataDetailDto>();
+				if("01".equals(useFldDiv)) useDtos = testDataDto.getHeaderList();
+				else useDtos = testDataDto.getInviList();
+				
+				//테스트 데이터에 필드이름을 비교하여 입력값을 변경한다.
+				for(TestDataDetailDto useDto : useDtos){
+					if(useFldDiv.equals(useDto.getTscsFldDiv()) &&
+						useFldName.equals(useDto.getTsdataFldName()) &&
+						(useFldRptName.equals(useDto.getRptName()) ||
+							(StringUtil.isEmptyString(useFldRptName) && StringUtil.isEmptyString(useDto.getRptName()))) &&
+						(useFldRptCnt.equals(useDto.getRptCnt()) ||
+							(StringUtil.isEmptyString(useFldRptCnt) && StringUtil.isEmptyString(useDto.getRptCnt())))){
+								
+						//조건식이 있을경우
+						if(cndnStylCtnt != null && !"".equals(cndnStylCtnt)){
+							changeData = this.filltering(changeData, cndnStylCtnt);
+						}
+						useDto.setTsdataFldData(changeData);
+						break;
+							
+					}
+				}
+			}
+			
+			//반복부행 -> 일반필드 전체매핑
+			else if("03".equals(preFldAttrib) && "05".equals(useFldAttrib)){
+				String preRptFldName = null;
+				String preRptName = null;
+				String preRptCnt = null;
+				String useRptName = null;
+				List<RptTestDataDetailDTO> copyRptList = new ArrayList<RptTestDataDetailDTO>();
+				
+				//필드이름을 비교하여 사용하려는 입출력값을 가져온다.
+				for(RptTestDataDetailDTO preDto : preDtos){
+					if(preFldDiv.equals(preDto.getTscsFldDiv()) &&
+						preFldName.equals(preDto.getTsdataFldName()) &&
+						preFldAttrib.equals(preDto.getTscsFldAttrib())){
+						
+						preRptFldName = preDto.getTsdataFldName();
+						preRptName = preDto.getRptCntName();
+						preRptCnt = preDto.getTsdataFldData();
+					} else if(preDto.getRptName() != null && preDto.getRptName().equals(preRptName)
+							&& preFldRptCnt.equals(preDto.getRptCnt().trim())){
+						copyRptList.add(preDto);
+					}
+				}
+				
+				if(preRptCnt == null) continue;
+				
+				List<TestDataDetailDto> useDtos = new ArrayList<TestDataDetailDto>();
+				if("01".equals(useFldDiv)) useDtos = testDataDto.getHeaderList();
+				else useDtos = testDataDto.getInviList();
+				
+				//테스트 데이터에 필드이름을 비교하여 입력값을 변경한다.
+				for(RptTestDataDetailDTO preDto : copyRptList){
+					for(TestDataDetailDto useDto : useDtos){						
+						if(preDto.getTsdataFldName().equals(useDto.getTsdataFldName()) && StringUtil.isEmptyString(useDto.getRptName())){
+							
+							useDto.setTsdataFldData(preDto.getTsdataFldData());
+							continue;
+						}
+					}
+				}
+			}
+		}
+		return this.executeTestData(testDataDto, loginDto);
+	}
+
+
+	/**
+	 * <p>
+	 * 조건식 적용
+	 * <p>
+	 * @param changeData 조건식을 적용할 데이터
+	 * @param cndnStylCtnt 조건식
+	 * @return 조건식을 적용한 데이터
+	 */
+	private String filltering(String changeData, String cndnStylCtnt) {
+		Filtering filter = new Filtering();
+		
+		if(changeData == null){
+			changeData = "";
+		}
+		
+		String[] conList = cndnStylCtnt.trim().split(",");
+		
+		for(String con : conList){
+			changeData = filter.convertData(con.trim(), changeData); 
+		}
+		
+		return changeData;
+	}
+}

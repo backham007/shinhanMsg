@@ -1,0 +1,4 @@
+#Tomcat publish data
+#Thu Apr 11 14:05:24 KST 2013
+org.eclipse.jst.jee.server\:/binary\:D\:\\msgTestro\\workspace\\msgTestro\\testro-web\\WebContent\\WEB-INF\\lib\\webtutil-5.9.0.0.jar=WEB-INF/lib/webtutil-5.9.0.0.jar
+org.eclipse.jst.j2ee.server\:testro-java=WEB-INF/lib/testro-java.jar

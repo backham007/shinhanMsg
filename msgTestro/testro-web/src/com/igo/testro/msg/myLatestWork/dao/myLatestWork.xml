@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="myLatestWork">
+
+	<typeAlias alias="myLatestWorkDto" type="com.igo.testro.msg.myLatestWork.dto.myLatestWorkDto"/>
+	<select id="getListTestData" resultClass="myLatestWorkDto">
+	/* myLatestWork.xml_getListTestData 나의 최근작업 목록 조회*/
+	SELECT *
+	FROM (SELECT D01.*,C02.*
+	 	 FROM (SELECT D01.*,R01.ACMPLNTH,R01.RSULTSUCSSYN
+		 	   FROM TESDATA01 D01 Left Outer Join  
+		 	   								     (select a.TSDATAID 
+		 	   								     	    ,MAX(a.ACMPLNTH) ACMPLNTH
+					 									,a.RSULTSUCSSYN
+					 							  from rptdata01 a 
+					 							  group by a.TSDATAID
+					 							   	      ,a.RSULTSUCSSYN 
+					 							 ) R01
+		 	  ON
+		 	  		 D01.TSDATAID = R01.TSDATAID
+		 	  	 <isNotEmpty property="tsdataId" prepend="AND">
+		     		 D01.TSDATAID like '%'||#tsdataId#||'%'
+				 </isNotEmpty>
+				 <isNotEmpty property="tsdataName" prepend="AND">
+				     D01.TSDATANAME = #tsdataName#
+				 </isNotEmpty>
+				 <isNotEmpty property="rsultSucssYn" prepend="AND">
+				     R01.RSULTSUCSSYN = #rsultSucssYn#
+				 </isNotEmpty>
+				 <isNotEmpty property="tranCd" prepend="AND">
+				     D01.TRANCD = #tranCd#
+				 </isNotEmpty>
+				 <isNotEmpty property="tranName" prepend="AND">
+				     D01.TRANNAME = #tranName#
+				 </isNotEmpty>
+		 	  
+		 	  ) D01  LEFT OUTER JOIN  TESCASE02 C02
+		 	  ON 
+		 	   C02.TSDATAID = D01.TSDATAID
+		   ) a
+	 	WHERE a.seq  &gt; 500
+	</select>
+    
+	<select id="getListTestCase" resultClass="myLatestWorkDto">
+	/* myLatestWork.xml_getListTestCase_나의최근작업조회[테스트케이스목록] */
+	    SELECT  a.CRETNYMS           cretnYMS   
+	          , a.LASTMODFIID        lastModfiId
+	          , a.LASTMODFIYMS       lastModfiYMS
+	          , a.TSCASEID           objId
+	          , a.ACMPLNTH           acmplnth
+	          , a.TRANCD             tranCd
+	          , a.TRANNAME 			 tranName
+	          , a.TSCASENAME         objName
+	          , count(b.TSCASEID)    tcCount
+	          , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	          	 )  rsultSucssYn
+	          , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	          	 )  rsultSucssYnExcl
+	          , (case when a.RSULTSUCSSYN is null then '미실행'
+	          	 	  else '실행' 
+	          	 END
+	          	) exeYn
+	    FROM (
+		 	 SELECT a.*,b.ACMPLNTH,b.RSULTSUCSSYN
+             FROM
+		 	 TESCASE01 a
+ 		 	LEFT OUTER JOIN (
+ 		 					 select a.*,b.RSULTSUCSSYN
+ 		 					 from (select a.TSCASEID, max(a.ACMPLNTH) ACMPLNTH
+					 		      from RPTCASE01 a
+					 		 	  group by a.TSCASEID) a, RPTCASE01 b
+					 		 where a.TSCASEID = b.TSCASEID
+					 		 	   and a.ACMPLNTH = b.ACMPLNTH
+			 		  		         
+					  )b
+	     ON a.TSCASEID = b.TSCASEID
+	     ) a , TESCASE02 b
+	     WHERE
+	     	a.TSCASEID = b.TSCASEID
+	     	<isNotEmpty property="rsultSucssYn" prepend="and">
+	     		a.RSULTSUCSSYN = #rsultSucssYn#
+	     	</isNotEmpty>
+	     	<isNotEmpty property="tranCd" prepend="and">
+	     		a.TRANCD like '%'||#tranCd#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="tranName" prepend="and">
+	     		a.TRANNAME like '%'||#tranName#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="objId" prepend="and">
+	     		a.TSCASEID like '%'||#objId#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="objName" prepend="and">
+	     		a.TSCASENAME like '%'||#objName#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="lastModfiId" prepend="and">
+	     		a.LASTMODFIID = #lastModfiId#
+	     	</isNotEmpty>
+	     
+	     GROUP BY 
+	      a.CRETNYMS, a.TSCASEID , a.TRANCD, a.TRANNAME , a.TSCASENAME , a.RSULTSUCSSYN ,  a.ACMPLNTH ,a.LASTMODFIYMS,a.LASTMODFIID
+	      <dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					$sidx$ $sord$
+				</isNotEmpty>
+		  </dynamic>
+	</select>
+	
+	<select id="getListTestsinario" resultClass="myLatestWorkDto">
+	/*myLatestWork.xml_getListTestSinario_나의최근작업조회[시나리오]*/	
+		SELECT a.CRETNYMS         cretnYMS
+		      ,a.LASTMODFIID      lastModfiId
+		      ,a.LASTMODFIYMS     lastModfiYMS
+	 		  ,a.TSSNRIOID		  objId
+	 		  ,a.ACMPLNTH		  acmplnth
+	 		  ,a.TSSNRIONAME      objName
+	 		  ,a.CHNLDSTCD        chnlDstcd
+	 		  ,count(b.TSSNRIOID) tcCount
+	 		  , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	           )  rsultSucssYn
+	 		  , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	           )  rsultSucssYnExcl
+	          , (case when a.RSULTSUCSSYN is null then '미실행'
+	          	 	  else '실행' 
+	          	 END
+	          	) exeYn
+	 		 
+	     FROM ( select a.*, b.ACMPLNTH, b.RSULTSUCSSYN
+		  		from
+		  		TESSNRO01 a LEFT OUTER JOIN
+				(
+				select a.*,b.RSULTSUCSSYN
+				from (select r01.TSSNRIOID, max(r01.ACMPLNTH) ACMPLNTH
+					   from RPTSNRO01 r01
+					   group by r01.TSSNRIOID
+					  )a,  RPTSNRO01 b
+				where a.TSSNRIOID = b.TSSNRIOID
+				  and a.ACMPLNTH = b.ACMPLNTH
+				) b
+		 ON
+			a.TSSNRIOID = b.TSSNRIOID ) a, 
+			TESSNRO02 b
+		WHERE
+		a.TSSNRIOID = b.TSSNRIOID
+		<isNotEmpty property="rsultSucssYn" prepend="AND">
+			a.RSULTSUCSSYN = #rsultSucssYn#
+		</isNotEmpty>
+		<isNotEmpty property="chnlDstcd" prepend="AND">
+			a.CHNLDSTCD = #chnlDstcd#
+		</isNotEmpty>
+		<isNotEmpty property="objId" prepend="AND">
+			a.TSSNRIOID like '%'||#objId#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="objName" prepend="AND">
+			a.TSSNRIONAME like '%'||#objName#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="lastModfiId" prepend="AND">
+	 	  	a.LASTMODFIID = #lastModfiId#
+	 	</isNotEmpty>
+		GROUP BY  a.CRETNYMS 
+	 		 ,a.TSSNRIOID
+	 		 ,a.TSSNRIONAME
+	 		 ,a.CHNLDSTCD
+	 		 ,a.RSULTSUCSSYN
+	 		 ,a.ACMPLNTH
+	 		 ,a.LASTMODFIID
+	 		 ,a.LASTMODFIYMS
+	 	<dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					$sidx$ $sord$
+				</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getListReport" resultClass="myLatestWorkDto">
+	/* myLatestWork.xml_getListReport_나의최근작업조회[결과보고서]*/
+	 	 SELECT
+	 	 	    '테스트케이스'            reportGubun
+	 	  	    ,r01.CRETNYMS         	cretnYMS
+	 	        ,r01.TSCASEID        	objId
+	 	        ,r01.TSCASENAME      	objName
+	 	  	    ,r01.ACMPLNTH        	acmplnth
+	 	  	    ,count(r02.TSCASEID)	tcCount
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYn
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYnExcl
+	 	  	    ,sum(case when r02.RSULTSUCSSYN = 'Y' then 1
+	 	  	   			else 0
+	 	  	   			end)     	    objExeCnt
+	 	  	    ,sum(case when r02.RSULTSUCSSYN = 'N' then 1
+	 	  	   			else 0
+	 	  	   			end)     		objMissCnt
+	 	  FROM RPTCASE01 r01,  RPTCASE02 r02
+	 	  WHERE 
+	 	  	  r01.TSCASEID = r02.TSCASEID
+	 	  	  AND
+	 	  	  r01.ACMPLNTH = r02.ACMPLNTH
+	 	  	  <isNotEmpty property="rsultSucssYn" prepend="and">
+	 	  	  	r01.RSULTSUCSSYN = #rsultSucssYn#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objId" prepend="and">
+	 	  	  	r01.TSCASEID = #objId#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objName" prepend="and">
+	 	  	  	r01.TSCASENAME like '%'||#objName#||'%'
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="tstrName" prepend="and">
+	 	  	    (r01.TSTRNAME like #tstrName#||'%' or r01.TSTRID like #tstrName#||'%')
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="lastModfiId" prepend="and">
+	 	  	    r01.TSTRID  = #lastModfiId#
+	 	  	  </isNotEmpty>
+	 	  GROUP BY  r01.CRETNYMS
+	 	           ,r01.TSCASEID
+	 	           ,r01.TSCASENAME 
+	 	           ,r01.ACMPLNTH
+	 	           ,r01.RSULTSUCSSYN
+	       UNION
+	    SELECT
+	    		'테스트시나리오'           reportGubun
+	 	  	    ,r01.CRETNYMS           cretnyms
+	 	        ,r01.TSSNRIOID          objId
+	 	        ,r01.TSSNRIONAME        objName
+	 	  	    ,r01.ACMPLNTH           acmplnth
+	 	  	    ,count(r02.TSSNRIOID)    tcCount
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYn
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYnExcl
+	 	  	    ,SUM(case when r02.RSULTSUCSSYN = 'Y' then 1
+	 	  	   			else 0
+	 	  	   			END)     		objExeCnt
+	 	  	   ,SUM(case when r02.RSULTSUCSSYN = 'N' then 1
+	 	  	   			else 0
+	 	  	   			END)     		objMissCnt
+	    FROM   RPTSNRO01 r01, RPTSNRO02 r02
+	    WHERE
+	       	  r01.TSSNRIOID = r02.TSSNRIOID
+	       	  AND
+	       	  r01.ACMPLNTH = r02.ACMPLNTH
+	       	  <isNotEmpty property="rsultSucssYn" prepend="and">
+	 	  	  	r01.RSULTSUCSSYN = #rsultSucssYn#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objId" prepend="and">
+	 	  	  	r01.TSSNRIOID = #objId#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objName" prepend="and">
+	 	  	  	r01.TSSNRIONAME like '%'||#objName#||'%'
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="tstrName" prepend="and">
+	 	  	    (r01.TSTRNAME like #tstrName#||'%' or r01.TSTRID like #tstrName#||'%')
+	 	  	  </isNotEmpty>
+	 	  	   <isNotEmpty property="lastModfiId" prepend="and">
+	 	  	    r01.TSTRID  = #lastModfiId#
+	 	  	  </isNotEmpty>
+	   GROUP BY     r01.CRETNYMS
+	 	           ,r01.TSSNRIOID
+	 	           ,r01.TSSNRIONAME 
+	 	           ,r01.ACMPLNTH
+	 	           ,r01.RSULTSUCSSYN
+	    <dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					$sidx$ $sord$
+				</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getCountListReport" resultClass="Integer">
+	/* myLatestWork.xml_getCountListReport_나의최근작업조회[결과보고서갯수]*/
+	 	 select count(*)
+	 	 from(SELECT
+	 	 	    '테스트케이스'            reportGubun
+	 	  	    ,r01.CRETNYMS         	cretnYMS
+	 	        ,r01.TSCASEID        	objId
+	 	        ,r01.TSCASENAME      	objName
+	 	  	    ,r01.ACMPLNTH        	acmplnth
+	 	  	    ,count(r02.TSCASEID)	tcCount
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYn
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYnExcl
+	 	  	    ,sum(case when r02.RSULTSUCSSYN = 'Y' then 1
+	 	  	   			else 0
+	 	  	   			end)     	    objExeCnt
+	 	  	    ,sum(case when r02.RSULTSUCSSYN = 'N' then 1
+	 	  	   			else 0
+	 	  	   			end)     		objMissCnt
+	 	  FROM RPTCASE01 r01,  RPTCASE02 r02
+	 	  WHERE 
+	 	  	  r01.TSCASEID = r02.TSCASEID
+	 	  	  AND
+	 	  	  r01.ACMPLNTH = r02.ACMPLNTH
+	 	  	  <isNotEmpty property="rsultSucssYn" prepend="and">
+	 	  	  	r01.RSULTSUCSSYN = #rsultSucssYn#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objId" prepend="and">
+	 	  	  	r01.TSCASEID = #objId#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objName" prepend="and">
+	 	  	  	r01.TSCASENAME like '%'||#objName#||'%'
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="tstrName" prepend="and">
+	 	  	    (r01.TSTRNAME like #tstrName#||'%' or r01.TSTRID like #tstrName#||'%')
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="lastModfiId" prepend="and">
+	 	  	    r01.TSTRID  = #lastModfiId#
+	 	  	  </isNotEmpty>
+	 	  GROUP BY  r01.CRETNYMS
+	 	           ,r01.LASTMODFIID
+	 	           ,r01.TSCASEID
+	 	           ,r01.TSCASENAME 
+	 	           ,r01.ACMPLNTH
+	 	           ,r01.RSULTSUCSSYN
+	       UNION
+	    SELECT
+	    		'테스트시나리오'           reportGubun
+	 	  	    ,r01.CRETNYMS           cretnyms
+	 	        ,r01.TSSNRIOID          objId
+	 	        ,r01.TSSNRIONAME        objName
+	 	  	    ,r01.ACMPLNTH           acmplnth
+	 	  	    ,count(r02.TSSNRIOID)    tcCount
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYn
+	 	  	    ,(case when r01.RSULTSUCSSYN = 'Y' then '성공'
+	 	  	           else '실패' END)   rsultSucssYnExcl
+	 	  	    ,SUM(case when r02.RSULTSUCSSYN = 'Y' then 1
+	 	  	   			else 0
+	 	  	   			END)     		objExeCnt
+	 	  	   ,SUM(case when r02.RSULTSUCSSYN = 'N' then 1
+	 	  	   			else 0
+	 	  	   			END)     		objMissCnt
+	    FROM   RPTSNRO01 r01, RPTSNRO02 r02
+	    WHERE
+	       	  r01.TSSNRIOID = r02.TSSNRIOID
+	       	  AND
+	       	  r01.ACMPLNTH = r02.ACMPLNTH
+	       	  <isNotEmpty property="rsultSucssYn" prepend="and">
+	 	  	  	r01.RSULTSUCSSYN = #rsultSucssYn#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objId" prepend="and">
+	 	  	  	r01.TSSNRIOID = #objId#
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="objName" prepend="and">
+	 	  	  	r01.TSSNRIONAME like '%'||#objName#||'%'
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="tstrName" prepend="and">
+	 	  	    (r01.TSTRNAME like #tstrName#||'%' or r01.TSTRID like #tstrName#||'%')
+	 	  	  </isNotEmpty>
+	 	  	  <isNotEmpty property="lastModfiId" prepend="and">
+	 	  	    r01.TSTRID  = #lastModfiId#
+	 	  	  </isNotEmpty>
+	   GROUP BY     r01.CRETNYMS
+	   			   ,r01.LASTMODFIID
+	 	           ,r01.TSSNRIOID
+	 	           ,r01.TSSNRIONAME 
+	 	           ,r01.ACMPLNTH
+	 	           ,r01.RSULTSUCSSYN
+	 	)a
+	 
+	</select>
+	
+	<select id="getCountListTestCase" resultClass="Integer">
+	/* myLatestWork.xml_getCountListTestCase_나의최근작업조회[테스트케이스목록 갯수] */
+	   SELECT COUNT(*)
+	   FROM(
+	    SELECT  a.CRETNYMS              
+	          , a.TSCASEID           objId
+	          , a.ACMPLNTH           acmplnth
+	          , a.TRANCD             tranCd
+	          , a.TRANNAME 			 tranName
+	          , a.TSCASENAME         objName
+	          , count(b.TSCASEID)    tcCount
+	          , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	          	 )  rsultSucssYn
+	          , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	          	 )  rsultSucssYnExcl
+	          , (case when a.RSULTSUCSSYN is null then '미실행'
+	          	 	  else '실행' 
+	          	 END
+	          	) exeYn
+	    FROM (
+		 	 SELECT a.*,b.ACMPLNTH,b.RSULTSUCSSYN
+             FROM
+		 	 TESCASE01 a
+ 		 	LEFT OUTER JOIN (select a.TSCASEID, max(a.ACMPLNTH) ACMPLNTH, a.RSULTSUCSSYN
+					 		 from RPTCASE01 a, TESCASE01 b
+					 		 where a.TSCASEID =  b.TSCASEID
+					 		 group by a.TSCASEID
+			 		  		         ,a.RSULTSUCSSYN
+					  )b
+	     ON a.TSCASEID = b.TSCASEID
+	     ) a , TESCASE02 b
+	     WHERE
+	     	a.TSCASEID = b.TSCASEID
+	     	<isNotEmpty property="rsultSucssYn" prepend="and">
+	     		a.RSULTSUCSSYN = #rsultSucssYn#
+	     	</isNotEmpty>
+	     	<isNotEmpty property="tranCd" prepend="and">
+	     		a.TRANCD like '%'||#tranCd#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="tranName" prepend="and">
+	     		a.TRANNAME like '%'||#tranName#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="objId" prepend="and">
+	     		a.TSCASEID like '%'||#objId#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="objName" prepend="and">
+	     		a.TSCASENAME like '%'||#objName#||'%'
+	     	</isNotEmpty>
+	     	<isNotEmpty property="lastModfiId" prepend="and">
+	     		a.LASTMODFIID = #lastModfiId#
+	     	</isNotEmpty>
+	     
+	     GROUP BY 
+	      a.CRETNYMS, a.TSCASEID , a.TRANCD, a.TRANNAME , a.TSCASENAME , a.RSULTSUCSSYN ,  a.ACMPLNTH, a.LASTMODFIID
+	      ) a
+	   
+	</select>
+	
+	<select id="getCountListTestsinario" resultClass="Integer">
+	/*myLatestWork.xml_getCountListTestsinario_나의최근작업조회[시나리오목록갯수]*/
+	    SELECT COUNT(*)	
+		FROM(SELECT a.CRETNYMS         cretnYMS
+	 		  ,a.TSSNRIOID		  objId
+	 		  ,a.ACMPLNTH		  acmplnth
+	 		  ,a.TSSNRIONAME      objName
+	 		  ,a.CHNLDSTCD        chnlDstcd
+	 		  ,count(b.TSSNRIOID) tcCount
+	 		  , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	           )  rsultSucssYn
+	 		  , (case when a.RSULTSUCSSYN = 'Y' then '성공'
+	                  when a.RSULTSUCSSYN = 'N' then '실패'
+	             END
+	           )  rsultSucssYnExcl
+	          , (case when a.RSULTSUCSSYN is null then '미실행'
+	          	 	  else '실행' 
+	          	 END
+	          	) exeYn
+	 		 
+	     FROM ( select a.*, b.ACMPLNTH, b.RSULTSUCSSYN
+		  		from
+		  		TESSNRO01 a LEFT OUTER JOIN
+				(select r01.TSSNRIOID, max(r01.ACMPLNTH) ACMPLNTH , r01.RSULTSUCSSYN
+				from RPTSNRO01 r01
+				group by r01.TSSNRIOID , r01.RSULTSUCSSYN) b
+		 ON
+			a.TSSNRIOID = b.TSSNRIOID ) a, 
+			TESSNRO02 b
+		WHERE
+		a.TSSNRIOID = b.TSSNRIOID
+		<isNotEmpty property="rsultSucssYn" prepend="AND">
+			a.RSULTSUCSSYN = #rsultSucssYn#
+		</isNotEmpty>
+		<isNotEmpty property="chnlDstcd" prepend="AND">
+			a.CHNLDSTCD = #chnlDstcd#
+		</isNotEmpty>
+		<isNotEmpty property="objId" prepend="AND">
+			a.TSSNRIOID like '%'||#objId#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="objName" prepend="AND">
+			a.TSSNRIONAME like '%'||#objName#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="lastModfiId" prepend="AND">
+	 	  	a.LASTMODFIID = #lastModfiId#
+	 	</isNotEmpty>
+		GROUP BY  a.CRETNYMS 
+	 		 ,a.TSSNRIOID
+	 		 ,a.TSSNRIONAME
+	 		 ,a.CHNLDSTCD
+	 		 ,a.RSULTSUCSSYN
+	 		 ,a.ACMPLNTH) a
+	 	
+	</select>
+	
+	<delete id="deleteTestcase02">
+	/*myLatestWork.xml_deleteTestCase_나의최근작업조회[테스트케이스 상세 삭제]*/
+	DELETE FROM TESCASE02
+	WHERE TSCASEID = #objId#
+	</delete>
+	<delete id="deleteTestcase01">
+	/*myLatestWork.xml_deleteTestCase_나의최근작업조회[테스트케이스 기본 삭제]*/
+	DELETE FROM TESCASE01
+	WHERE TSCASEID = #objId#
+	</delete>
+	
+	<delete id="deleteTestsnro02">
+	/*myLatestWork.xml_deleteTestsnro_나의최근작업조회[테스트시나리오 상세 삭제] */
+	DELETE FROM TESSNRO02
+	WHERE TSSNRIOID = #objId#
+	</delete>
+	<delete id="deleteTestsnro01">
+	/*myLatestWork.xml_deleteTestsnro_나의최근작업조회[테스트시나리오 기본 삭제] */
+	DELETE FROM TESSNRO01
+	WHERE TSSNRIOID = #objId#
+	</delete>
+	
+	<delete id="deleteTestcaseReport02">
+	/*myLatestWork.xml_deleteTestcaseReport_나의최근작업조회[테스트케이스 보고서 상세 삭제] */
+	DELETE FROM RPTCASE02
+	WHERE  TSCASEID = #objId# 
+	       AND
+	       ACMPLNTH = #acmplnth#
+	</delete>
+	<delete id="deleteTestcaseReport01">
+	/*myLatestWork.xml_deleteTestcaseReport_나의최근작업조회[테스트케이스 보고서 기본 삭제] */
+	DELETE FROM RPTCASE01
+	WHERE  TSCASEID = #objId# 
+	       AND
+	       ACMPLNTH = #acmplnth#
+	</delete>
+	<delete id="deleteTestsnroReport02">
+	/*myLatestWork.xml_deleteTestsnroReport_나의최근작업조회[테스트시나리오 보고서 상세 삭제] */
+	DELETE FROM RPTSNRO02
+	WHERE  TSSNRIOID = #objId# 
+	       AND
+	       ACMPLNTH = #acmplnth#
+	</delete>
+	<delete id="deleteTestsnroReport01">
+	/*myLatestWork.xml_deleteTestsnroReport_나의최근작업조회[테스트시나리오 보고서 기본 삭제] */
+	DELETE FROM RPTSNRO01
+	WHERE  TSSNRIOID = #objId# 
+	       AND
+	       ACMPLNTH = #acmplnth#
+	</delete>
+	
+</sqlMap>

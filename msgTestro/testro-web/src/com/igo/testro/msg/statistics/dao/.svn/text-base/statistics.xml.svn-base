@@ -1,0 +1,820 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="statistics">
+	<typeAlias alias="statisticDto" type="com.igo.testro.msg.statistics.dto.StatisticDto"/>	
+	<typeAlias alias="defPrgsStsDto" type="com.igo.testro.msg.statistics.dto.DefPrgsStsDto"/>	
+	<select id="getTscsTestPrgsSts"  resultClass="statisticDto">
+		 /* statistic.xml_getTscsTestPrgsSts */
+		SELECT   
+				 RE11."PROJNO"              AS projNo
+		        ,RE11."PROJNAME"             AS projName
+		        ,RE11."TESTSTGENAME"         AS testStgeName
+		        ,RE11."TRANCD"               AS tranCd
+		        ,RE11."TRANNAME"             AS tranName
+		        ,RE11."TRANNAME"||'('||RE11."TRANCD"||')'     AS tempTranNameforExcel
+		        ,RE11."TRANNAME"||'('||RE11."TRANCD"||')'     AS tempTranName
+		        ,(case when RE11."tscsExeCnt" is null then 0
+		        	  else RE11."tscsExeCnt"   END)    AS tscsExeCnt
+		        ,(case when RE11."tscsSucssCnt" is null then 0
+		        	  else RE11."tscsSucssCnt" END)    AS tscsSucssCnt
+		        ,(case when RE11."tscsMissCnt" is null then 0
+		        	  else RE11."tscsMissCnt"  END)  AS tscsMissCnt
+		        ,(case when RE11."tscsExeCnt" = 0 then 0
+		        	   else RE11."tscsSucssCnt" *100 /RE11."tscsExeCnt" END) As tscsPercent
+		FROM     (SELECT   RE11."PROJNO"
+						  ,RE11."PROJNAME"
+		                  ,RE11."TESTSTGENAME"
+		                  ,RE11."TRANCD" AS "TRANCD"
+		                  ,RE11."TRANNAME" AS "TRANNAME"
+		                  ,sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsExeCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								else 0
+								END)                                 AS "tscsSucssCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsMissCnt"
+		          FROM     
+		                  (SELECT   
+		                  			 RE11."PROJNO"
+		                  			,RE11."PROJNAME"
+		                  		    ,RE11."TSCASEID"
+		                            ,RE11."TESTSTGENAME"
+		                            ,RE11."TRANCD"  
+		                            ,RE11."TRANNAME" 
+		                            ,RE11."RSULTSUCSSYN"
+		                    FROM     RPTCASE01 RE11
+		                            ,(SELECT   RE11."TSCASEID"
+		                                      ,RE11."TESTSTGENAME"
+		                                      ,MAX(RE11."ACMPLNTH") "ACMPLNTH"
+		                              FROM     RPTCASE01 RE11
+		                                    
+		                              WHERE 
+		                              RE11."PROJNO" = #projNo#
+		                              <dynamic prepend="AND" >
+		                              	<isNotEmpty property="testStgeName" prepend="AND">
+										  	RE11.TESTSTGENAME = #testStgeName#
+										</isNotEmpty>
+		                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+											RE11.CONNSEVRDSTCD = #connSevrDstcd#
+									  	</isNotEqual>
+									  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                              
+		                              GROUP BY RE11."TSCASEID"
+		                                      ,RE11."PROJNO"
+		                                      ,RE11."TESTSTGENAME") RE12
+		                    WHERE     RE11."TSCASEID"  = RE12."TSCASEID"
+		                    AND       RE11."ACMPLNTH"    = RE12."ACMPLNTH"
+		                    AND       RE11."TESTSTGENAME"= RE12."TESTSTGENAME"
+		                    AND      (SUBSTR(RE11."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE11."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) ) RE11
+				            GROUP BY   RE11."PROJNO"
+				            		  ,RE11."PROJNAME"
+					                  ,RE11."TESTSTGENAME"
+					                  ,RE11."TRANCD"
+					                  ,RE11."TRANNAME"
+				                  ) RE11
+        				               
+		WHERE  RE11."PROJNO" = #projNo#
+	  <dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					testStgeName asc, $sidx$ $sord$
+				</isNotEmpty>
+	 </dynamic>
+	</select>
+	
+	<select id="getSnroTestPrgsSts"  resultClass="statisticDto">
+	/* statistics.xml_getSnroTestPrgsSts */
+	SELECT   
+				 RE09."PROJNO"               AS projNo
+		        ,RE09."PROJNAME"             AS projName
+		        ,RE09."TESTSTGENAME"         AS testStgeName
+		        ,''							 AS tranName
+		        ,(case when RE09."snroExeCnt" is null then 0
+		        	  else RE09."snroExeCnt" END)   AS tscsExeCnt
+		        ,(case when RE09."snroSucssCnt" is null then 0
+		        	  else RE09."snroSucssCnt" END)   AS tscsSucssCnt
+		        ,(case when RE09."snroMissCnt" is null then 0
+		        	  else RE09."snroMissCnt" END)  AS tscsMissCnt
+		        ,(case when RE09."snroExeCnt" = 0 then 0
+		        	   else RE09."snroSucssCnt" *100 / RE09."snroExeCnt" END) As tscsPercent
+		FROM     
+		         (SELECT     RE09."PROJNO"
+		         			,RE09."PROJNAME"
+		                  	,RE09."TESTSTGENAME"
+		                   	,sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+								  else 0
+								  END )                                 AS "snroExeCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+								  else 0
+								  END)                                 AS "snroSucssCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+							      else 0
+							      END )                                 AS "snroMissCnt"
+		          FROM      (SELECT   RE09."PROJNO"
+		          					 ,RE09."PROJNAME"
+                                	 ,RE09."TSSNRIOID"
+		                             ,RE09."TESTSTGENAME"
+		                             ,RE09."RSULTSUCSSYN"
+		                     FROM     RPTSNRO01 RE09
+		                            ,(SELECT   RE09."TSSNRIOID"
+		                                      ,RE09."TESTSTGENAME"
+		                                      ,MAX(RE09."ACMPLNTH") "ACMPLNTH"
+		                               FROM     RPTSNRO01 RE09
+		                                     
+		                               WHERE
+		                                  RE09."PROJNO" = #projNo#    
+			                              <dynamic prepend="AND" >
+			                              	<isNotEmpty property="testStgeName" prepend="AND">
+											  	RE09.TESTSTGENAME = #testStgeName#
+											</isNotEmpty>
+			                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+												                RE09.CONNSEVRDSTCD = #connSevrDstcd#
+										    </isNotEqual>
+										  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                             
+		                              GROUP BY RE09."TSSNRIOID"
+		                                      ,RE09."PROJNO"
+		                                      ,RE09."TESTSTGENAME") RE10
+		                    WHERE     RE09."TSSNRIOID" = RE10."TSSNRIOID"
+		                    AND       RE09."ACMPLNTH"    = RE10."ACMPLNTH"
+		                    AND       RE09."TESTSTGENAME"= RE10."TESTSTGENAME"
+		                    AND      (SUBSTR(RE09."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE09."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) 
+		                    AND 	   (RE09."MGRLVELDSTCD" not in('05') or RE09."MGRLVELDSTCD" is null) 
+		                    ) RE09
+		                    GROUP BY RE09."PROJNO"
+		                    		,RE09."PROJNAME"
+		                    	    ,RE09."TESTSTGENAME"
+		                    ) RE09
+        WHERE     RE09."PROJNO" = #projNo#
+         <dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					testStgeName asc , $sidx$ $sord$
+				</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getTscsPrvtTestPrgsSts" resultClass="statisticDto">
+	 /* rpt_prvtTestprgssts_prvttestprgssts.xml_getPrvtTestPrgsSts  */
+		SELECT   		  RE11."PROJNO" 										AS projNo
+		                 ,RE11."PROJNAME"										AS projName
+		                 ,RE11."TESTSTGENAME"									AS testStgeName
+		                 ,RE11."TSTRNAME"||'('||RE11."TSTRID"||')'				AS tstrName
+		                 ,RE11."TSTRNAME"||'('||RE11."TSTRID"||')'				AS tempTstrName
+		                 ,RE11."TSTRID" 										AS tstrId
+						,RE11."TRANCD"                                      	AS tranCd
+						,RE11."TRANNAME"                                      	AS tranName
+						,RE11."TRANNAME"||'('||RE11."TRANCD"||')'              	AS tempTranName
+						,(case when RE11."tscsExeCnt" is null then 0
+		        	 		  else RE11."tscsExeCnt"   END)    				    AS tscsExeCnt
+				        ,(case when RE11."tscsSucssCnt" is null then 0
+				        	  else RE11."tscsSucssCnt" END)   				    AS tscsSucssCnt
+				        ,(case when RE11."tscsMissCnt" is null then 0
+				        	  else RE11."tscsMissCnt"  END) 				    AS tscsMissCnt
+				        ,(case when RE11."tscsExeCnt" = 0 then 0
+				        	   else RE11."tscsSucssCnt" *100 /RE11."tscsExeCnt" END) As tscsPercent
+		FROM   (SELECT     RE11."PROJNO"
+						  ,RE11."PROJNAME"
+		                  ,RE11."TESTSTGENAME"
+		                  ,RE11."TSTRID"
+		                  ,RE11."TSTRNAME" 
+		                  ,RE11."TRANCD" AS "TRANCD"
+		                  ,RE11."TRANNAME" AS "TRANNAME"
+		                  ,sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsExeCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								else 0
+								END)                                 AS "tscsSucssCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsMissCnt"
+		          FROM     
+		                  (SELECT   
+		                  			 RE11."PROJNO"
+		                  			,RE11."PROJNAME"
+		                  		    ,RE11."TSCASEID"
+		                            ,RE11."TESTSTGENAME"
+		                            ,RE11."TRANCD"  
+		                            ,RE11."TRANNAME"
+		                            ,RE11."TSTRID"
+		                            ,RE11."TSTRNAME" 
+		                            ,RE11."RSULTSUCSSYN"
+		                    FROM     RPTCASE01 RE11
+		                            ,(SELECT   RE11."TSCASEID"
+		                                      ,RE11."TESTSTGENAME"
+		                                      ,MAX(RE11."ACMPLNTH") "ACMPLNTH"
+		                              FROM     RPTCASE01 RE11
+		                                    
+		                              WHERE 
+		                              RE11."PROJNO" = #projNo#
+		                              <dynamic prepend="AND" >
+		                              	<isNotEmpty property="testStgeName" prepend="AND">
+										  	RE11.TESTSTGENAME = #testStgeName#
+										</isNotEmpty>
+		                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+											RE11.CONNSEVRDSTCD = #connSevrDstcd#
+									  	</isNotEqual>
+									  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                              
+		                              GROUP BY RE11."TSCASEID"
+		                                      ,RE11."PROJNO"
+		                                      ,RE11."TESTSTGENAME") RE12
+		                    WHERE     RE11."TSCASEID"  = RE12."TSCASEID"
+		                    <dynamic>
+						        <isNotEmpty  property="tstrName" prepend="AND">
+							        (RE11."TSTRNAME"     like #tstrName#||'%'
+						        </isNotEmpty>
+						        <isNotEmpty  property="tstrName" prepend="OR">
+							        RE11."TSTRID"     like #tstrName#||'%')
+						        </isNotEmpty>
+		        	        </dynamic>
+		                    AND       RE11."ACMPLNTH"    = RE12."ACMPLNTH"
+		                    AND       RE11."TESTSTGENAME"= RE12."TESTSTGENAME"
+		                    AND      (SUBSTR(RE11."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE11."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) ) RE11
+				            GROUP BY   RE11."PROJNO"
+				            		  ,RE11."PROJNAME"
+					                  ,RE11."TESTSTGENAME"
+					                  ,RE11."TRANCD"
+					                  ,RE11."TRANNAME" 
+					                  ,RE11."TSTRID"
+		                              ,RE11."TSTRNAME"
+		                              order by "TRANNAME"
+					                    ) RE11
+                             order by tstrName asc, testStgeName asc
+								<isNotEmpty property="sidx" prepend=",">
+									$sidx$ $sord$
+								</isNotEmpty>
+	</select>
+	<select id="getSnroPrvtTestPrgsSts" resultClass="statisticDto">
+	 /* rpt_prvtTestprgssts_prvttestprgssts.xml_getSnroPrvtTestPrgsSts  */
+		SELECT   		 
+		                 RE09."PROJNO" 										    AS projNo
+		                ,RE09."PROJNAME"										AS projName
+		                ,RE09."TESTSTGENAME"									AS testStgeName
+		                ,RE09."TSTRNAME"||'('||RE09."TSTRID"||')'				AS tstrName
+		                ,RE09."TSTRNAME"||'('||RE09."TSTRID"||')'				AS tempTstrName
+		                ,RE09."TSTRID" 										    AS tstrId
+		                ,''				                                      	AS tranName
+						,''										              	AS tempTranName
+				        ,(case when RE09."snroExeCnt" is null then 0
+				        	  else RE09."snroExeCnt" END)   					AS tscsExeCnt
+				        ,(case when RE09."snroSucssCnt" is null then 0
+				        	  else RE09."snroSucssCnt" END)   					AS tscsSucssCnt
+				        ,(case when RE09."snroMissCnt" is null then 0
+				        	  else RE09."snroMissCnt" END)  					AS tscsMissCnt
+				        ,(case when RE09."snroExeCnt" = 0 then 0
+				        	   else RE09."snroSucssCnt" *100 /RE09."snroExeCnt" END) AS tscsPercent
+		                  
+		       FROM(SELECT       RE09."PROJNO"
+		       				,RE09."PROJNAME"
+		                  	,RE09."TESTSTGENAME"
+		                  	,RE09."TSTRID"
+							,RE09."TSTRNAME" 
+		                   	,sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+								  else 0
+								  END )                                 AS "snroExeCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+								  else 0
+								  END)                                 AS "snroSucssCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+							      else 0
+							      END )                                 AS "snroMissCnt"
+		          FROM      (SELECT   RE09."PROJNO"
+		          					 ,RE09."PROJNAME"
+                                	 ,RE09."TSSNRIOID"
+		                             ,RE09."TESTSTGENAME"
+		                             ,RE09."RSULTSUCSSYN"
+		                             ,RE09."TSTRID"
+									 ,RE09."TSTRNAME" 
+		                     FROM     RPTSNRO01 RE09
+		                            ,(SELECT   RE09."TSSNRIOID"
+		                                      ,RE09."TESTSTGENAME"
+		                                      ,MAX(RE09."ACMPLNTH") "ACMPLNTH"
+		                               FROM   RPTSNRO01 RE09
+		                                     
+		                               WHERE
+		                                  RE09."PROJNO" = #projNo#    
+			                              <dynamic prepend="AND" >
+			                              	<isNotEmpty property="testStgeName" prepend="AND">
+											  	RE09.TESTSTGENAME = #testStgeName#
+											</isNotEmpty>
+			                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+												                RE09.CONNSEVRDSTCD = #connSevrDstcd#
+										    </isNotEqual>
+										  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                             
+		                              GROUP BY RE09."TSSNRIOID"
+		                                      ,RE09."PROJNO"
+		                                      ,RE09."TESTSTGENAME") RE10
+		                    WHERE     RE09."TSSNRIOID" = RE10."TSSNRIOID"
+		                    AND       RE09."ACMPLNTH"    = RE10."ACMPLNTH"
+		                    AND       RE09."TESTSTGENAME"= RE10."TESTSTGENAME"
+		                     <dynamic>
+						        <isNotEmpty  property="tstrName" prepend="AND">
+							        (RE09."TSTRNAME"     like #tstrName#||'%'
+						        </isNotEmpty>
+						        <isNotEmpty  property="tstrName" prepend="OR">
+							        RE09."TSTRID"     like #tstrName#||'%')
+						        </isNotEmpty>
+		       				 </dynamic>
+		                    AND      (SUBSTR(RE09."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE09."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) 
+		                    ) RE09
+		                    GROUP BY RE09."PROJNO"
+									,RE09."PROJNAME"
+									,RE09."TESTSTGENAME"
+									,RE09."TSTRID"
+									,RE09."TSTRNAME" 
+		                    ) RE09
+							 order by tstrName asc, testStgeName asc
+								<isNotEmpty property="sidx" prepend=",">
+									$sidx$ $sord$
+								</isNotEmpty>
+	</select>
+	<select id="getTscsDeptTestPrgsSts" resultClass="statisticDto">
+	 /* rpt_prvtTestprgssts_prvttestprgssts.xml_getDeptTestPrgsSts  */
+		SELECT   		  RE11."PROJNO" 										AS projNo
+		                 ,RE11."PROJNAME"										AS projName
+		                 ,RE11."TESTSTGENAME"									AS testStgeName
+		                 ,RE11."DEPTNO"											AS deptNo
+		                 ,RE11."DEPTNAME"||'('||RE11."DEPTNO"||')'              AS deptName
+		                 ,RE11."DEPTNAME"||'('||RE11."DEPTNO"||')'              AS tempDeptName
+		                 ,RE11."TSTRNAME"||'('||RE11."TSTRID"||')'				AS tstrName
+		                 ,RE11."TSTRNAME"||'('||RE11."TSTRID"||')'				AS tempTstrName
+		                 ,RE11."TSTRID" 										AS tstrId
+						,RE11."TRANCD"                                      	AS tranCd
+						,RE11."TRANNAME"                                      	AS tranName
+						,RE11."TRANNAME"||'('||RE11."TRANCD"||')'              	AS tempTranName
+						,(case when RE11."tscsExeCnt" is null then 0
+		        	 		  else RE11."tscsExeCnt"   END)    				    AS tscsExeCnt
+				        ,(case when RE11."tscsSucssCnt" is null then 0
+				        	  else RE11."tscsSucssCnt" END)   				    AS tscsSucssCnt
+				        ,(case when RE11."tscsMissCnt" is null then 0
+				        	  else RE11."tscsMissCnt"  END) 				    AS tscsMissCnt
+				        ,(case when RE11."tscsExeCnt" = 0 then 0
+				        	   else RE11."tscsSucssCnt" *100 /RE11."tscsExeCnt" END) As tscsPercent
+		FROM   (SELECT     RE11."PROJNO"
+						  ,RE11."PROJNAME"
+		                  ,RE11."TESTSTGENAME"
+		                  ,RE11."TSTRID"
+		                  ,RE11."TSTRNAME"
+		                  ,RE11."DEPTNO"
+                  		  ,RE11."DEPTNAME"  
+		                  ,RE11."TRANCD" AS "TRANCD"
+		                  ,RE11."TRANNAME" AS "TRANNAME"
+		                  ,sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsExeCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'Y'   then 1
+								else 0
+								END)                                 AS "tscsSucssCnt" ,
+						      sum( case 
+								when RE11."RSULTSUCSSYN" = 'N'   then 1
+								else 0
+								END )                                 AS "tscsMissCnt"
+		          FROM     
+		                  (SELECT   
+		                  			 RE11."PROJNO"
+		                  			,RE11."PROJNAME"
+		                  		    ,RE11."TSCASEID"
+		                            ,RE11."TESTSTGENAME"
+		                            ,RE11."TRANCD"  
+		                            ,RE11."TRANNAME"
+		                            ,RE11."TSTRID"
+		                            ,RE11."TSTRNAME" 
+		                            ,MU01.DEPTNO
+		                            ,MU01.DEPTNAME
+		                            ,RE11."RSULTSUCSSYN"
+		                    FROM     RPTCASE01 RE11
+		                            ,(SELECT   RE11."TSCASEID"
+		                                      ,RE11."TESTSTGENAME"
+		                                      ,MAX(RE11."ACMPLNTH") "ACMPLNTH"
+		                              FROM     RPTCASE01 RE11
+		                                    
+		                              WHERE 
+		                              RE11."PROJNO" = #projNo#
+		                              <dynamic prepend="AND" >
+		                              	<isNotEmpty property="testStgeName" prepend="AND">
+										  	RE11.TESTSTGENAME = #testStgeName#
+										</isNotEmpty>
+		                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+											RE11.CONNSEVRDSTCD = #connSevrDstcd#
+									  	</isNotEqual>
+									  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                              
+		                              GROUP BY RE11."TSCASEID"
+		                                      ,RE11."PROJNO"
+		                                      ,RE11."TESTSTGENAME") RE12
+		                             ,MNGUSER01 MU01
+		                    WHERE     RE11."TSCASEID"  = RE12."TSCASEID"
+		                      AND     RE11.TSTRID = MU01.USRID
+		                    <dynamic>
+						        <isNotEmpty  property="deptName" prepend="AND">
+							        (MU01.DEPTNO     like '%'||#deptName#||'%'
+						        </isNotEmpty>
+						        <isNotEmpty  property="deptName" prepend="OR">
+							        MU01.DEPTNAME     like '%'||#deptName#||'%')
+						        </isNotEmpty>
+		        	        </dynamic>
+		                    AND       RE11."ACMPLNTH"    = RE12."ACMPLNTH"
+		                    AND       RE11."TESTSTGENAME"= RE12."TESTSTGENAME"
+		                    AND      (SUBSTR(RE11."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE11."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) ) RE11
+				            GROUP BY   RE11."PROJNO"
+				            		  ,RE11."PROJNAME"
+					                  ,RE11."TESTSTGENAME"
+					                  ,RE11."TRANCD"
+					                  ,RE11."TRANNAME" 
+					                  ,RE11."DEPTNO"
+                              		  ,RE11."DEPTNAME"
+					                  ,RE11."TSTRID"
+		                              ,RE11."TSTRNAME"
+		                              order by "TRANNAME"
+					                    ) RE11
+                             order by deptName asc, tstrName asc, testStgeName asc
+								<isNotEmpty property="sidx" prepend=",">
+									$sidx$ $sord$
+								</isNotEmpty>
+	</select>
+	<select id="getSnroDeptTestPrgsSts" resultClass="statisticDto">
+	 /* rpt_prvtTestprgssts_prvttestprgssts.xml_getSnroDeptTestPrgsSts  */
+		SELECT   		 
+		                 RE09."PROJNO" 										    AS projNo
+		                ,RE09."PROJNAME"										AS projName
+		                ,RE09."TESTSTGENAME"									AS testStgeName
+		                ,RE09."DEPTNO"											AS deptNo
+		                ,RE09."DEPTNAME"||'('||RE09."DEPTNO"||')'               AS deptName
+		                ,RE09."DEPTNAME"||'('||RE09."DEPTNO"||')'               AS tempDeptName
+		                ,RE09."TSTRNAME"||'('||RE09."TSTRID"||')'				AS tstrName
+		                ,RE09."TSTRNAME"||'('||RE09."TSTRID"||')'				AS tempTstrName
+		                ,RE09."TSTRID" 										    AS tstrId
+		                ,''				                                      	AS tranName
+						,''										              	AS tempTranName
+				        ,(case when RE09."snroExeCnt" is null then 0
+				        	  else RE09."snroExeCnt" END)   					AS tscsExeCnt
+				        ,(case when RE09."snroSucssCnt" is null then 0
+				        	  else RE09."snroSucssCnt" END)   					AS tscsSucssCnt
+				        ,(case when RE09."snroMissCnt" is null then 0
+				        	  else RE09."snroMissCnt" END)  					AS tscsMissCnt
+				        ,(case when RE09."snroExeCnt" = 0 then 0
+				        	   else RE09."snroSucssCnt" *100 /RE09."snroExeCnt" END) AS tscsPercent
+		                  
+		       FROM(SELECT   RE09."PROJNO"
+		       				,RE09."PROJNAME"
+		                  	,RE09."TESTSTGENAME"
+		                  	,RE09."TSTRID"
+							,RE09."TSTRNAME" 
+		                   	,RE09."DEPTNO"
+                  		    ,RE09."DEPTNAME"  
+		                    ,sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+								  else 0
+								  END )                                 AS "snroExeCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'Y'   then 1
+								  else 0
+								  END)                                 AS "snroSucssCnt" ,
+						     sum( case 
+							      when RE09."RSULTSUCSSYN" = 'N'   then 1
+							      else 0
+							      END )                                 AS "snroMissCnt"
+		          FROM      (SELECT   RE09."PROJNO"
+		          					 ,RE09."PROJNAME"
+                                	 ,RE09."TSSNRIOID"
+		                             ,RE09."TESTSTGENAME"
+		                             ,RE09."RSULTSUCSSYN"
+		                             ,RE09."TSTRID"
+									 ,RE09."TSTRNAME"
+									 ,MU01.DEPTNO
+		                             ,MU01.DEPTNAME
+		                     FROM     RPTSNRO01 RE09
+		                            ,(SELECT   RE09."TSSNRIOID"
+		                                      ,RE09."TESTSTGENAME"
+		                                      ,MAX(RE09."ACMPLNTH") "ACMPLNTH"
+		                               FROM   RPTSNRO01 RE09
+		                                     
+		                               WHERE
+		                                  RE09."PROJNO" = #projNo#    
+			                              <dynamic prepend="AND" >
+				                            <isNotEmpty property="testStgeName" prepend="AND">
+											  	RE09.TESTSTGENAME = #testStgeName#
+											</isNotEmpty>
+			                              	<isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+												                RE09.CONNSEVRDSTCD = #connSevrDstcd#
+										    </isNotEqual>
+										  </dynamic>
+		                              AND     (SUBSTR("TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                              OR       SUBSTR("TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+		                             
+		                              GROUP BY RE09."TSSNRIOID"
+		                                      ,RE09."PROJNO"
+		                                      ,RE09."TESTSTGENAME") RE10
+		                             ,MNGUSER01 MU01
+		                    WHERE     RE09."TSSNRIOID" = RE10."TSSNRIOID"
+		                    AND       RE09."ACMPLNTH"    = RE10."ACMPLNTH"
+		                    AND       RE09."TESTSTGENAME"= RE10."TESTSTGENAME"
+		                    AND       RE09.TSTRID = MU01.USRID
+		                    <dynamic>
+						        <isNotEmpty  property="deptName" prepend="AND">
+							        (MU01.DEPTNO     like '%'||#deptName#||'%'
+						        </isNotEmpty>
+						        <isNotEmpty  property="deptName" prepend="OR">
+							        MU01.DEPTNAME     like '%'||#deptName#||'%')
+						        </isNotEmpty>
+		        	        </dynamic>
+		                    AND      (SUBSTR(RE09."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+		                    OR        SUBSTR(RE09."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#) 
+		                    ) RE09
+		                    GROUP BY RE09."PROJNO"
+									,RE09."PROJNAME"
+									,RE09."TESTSTGENAME"
+									,RE09."TSTRID"
+									,RE09."TSTRNAME"
+									,RE09."DEPTNO"
+                              		,RE09."DEPTNAME"   
+		                    ) RE09
+							 order by deptName asc, tstrName asc, testStgeName asc
+								<isNotEmpty property="sidx" prepend=",">
+									$sidx$ $sord$
+								</isNotEmpty>
+	</select>
+	<select id="getDefPrgsSts" resultClass="defPrgsStsDto">
+	/* statistics.xml_getDefPrgsSts_결함 총괄표 조회 */
+	
+	SELECT 
+	       rptc01.TSCASEID          objId,
+	       rptc01.TSCASENAME        objName,
+	 	   rptc02.TSDATAID          tsdataId,
+	  	   rptc02.TSDATANAME        tsdataName,
+	  	   rptc02.ACMPLNTH          acmplNth,
+	  	   rptc02.TSDATAACMPLNTH    tsdataAcmplNth,
+           def01.DEFNO              defNo
+          ,(select dtailname 
+          	from mngcode01
+          	where dtailcd = rptc01.CONNSEVRDSTCD
+          		and  cdclmnname = 'CONNSEVRDSTCD'
+          	) connSevrDstcd
+		  ,rptc01.TRANCD           tranCd 
+		  ,rptc01.TRANNAME         tranName
+		  ,(case when def01.DEFCD = '01' then '신규'
+		         when def01.DEFCD = '02' then '배분'
+		         when def01.DEFCD = '03' then '수정완료'
+		         when def01.DEFCD = '04' then '승인'
+		         else '신규'
+		         END  )     	   defCd
+		  ,def01.DEFERRCD	       defErrCd
+	      ,def01.DEFREGID  		   defRegId
+	      ,def01.DEFREGNM  		   defRegNm
+	      ,def01.DEFREGYMS 		   defRegYMS
+	FROM RPTDEFT01 def01,
+	     RPTCASE01 rptc01,
+	     RPTCASE02 rptc02 
+	WHERE
+    	def01.tsdataid = rptc02.tsdataid
+    and def01.acmplnth = rptc02.TSDATAACMPLNTH
+    and rptc02.TSCASEID = rptc01.TSCASEID
+    and rptc02.ACMPLNTH = rptc01.ACMPLNTH
+    and def01.DEFCD IS NOT NULL
+    <isNotEmpty property="projNo" prepend="AND">
+    	rptc01.PROJNO = #projNo#
+    </isNotEmpty>
+    <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+    	rptc01.CONNSEVRDSTCD = #connSevrDstcd#
+    </isNotEqual>
+    <isNotEmpty property="testStgeName" prepend="AND">
+    	rptc01.TESTSTGENAME = #testStgeName#
+    </isNotEmpty>
+    <isNotEqual property="defCd" compareValue="00" prepend="AND">
+    	def01.DEFCD = #defCd#
+    </isNotEqual>
+    
+    <isNotEmpty property="tranCd" prepend="AND">
+    	rptc01.TRANCD like #tranCd#||'%'
+    </isNotEmpty>
+    <isNotEmpty property="testStartYMS">
+    	<isNotEmpty property="testEndYMS" prepend="AND">
+    	(SUBSTR(rptc01."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+    	OR  SUBSTR(rptc01."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+    	</isNotEmpty>
+    </isNotEmpty>
+
+    	UNION 
+	
+	SELECT
+	     rpts01.TSSNRIOID            objId,
+	     rpts01.tssnrioname          objName,
+ 	     rpts02.TSDATAID             tsdataId,
+	     rpts02.TSDATANAME           tsdataName,
+	     rpts02.ACMPLNTH             acmplNth,
+	     rpts02.TSDATAACMPLNTH       tsdataAcmplNth,
+         def01.DEFNO  	             defNo,
+         (select dtailname 
+          	from mngcode01
+          	where dtailcd = rpts01.CONNSEVRDSTCD
+          		and  cdclmnname = 'CONNSEVRDSTCD'
+          	) connSevrDstcd,
+		 tesd01.TRANCD   			  tranCd,
+  		 tesd01.TRANNAME 			  tranName,
+		(case when def01.DEFCD = '01' then '신규'
+		       when def01.DEFCD = '02' then '배분'
+		       when def01.DEFCD = '03' then '수정완료'
+		       when def01.DEFCD = '04' then '승인'
+		       else '신규'
+		       END  )     	       defCd,
+		def01.DEFERRCD             defErrCd,
+	    def01.DEFREGID             defRegId,
+	    def01.DEFREGNM             defRegNm,
+	    def01.DEFREGYMS            defRegYMS
+	FROM RPTDEFT01 def01,
+		 RPTSNRO01 rpts01,
+		 RPTSNRO02 rpts02,
+		 TESDATA01 tesd01 
+	WHERE
+         def01.tsdataid = rpts02.tsdataid
+    AND  def01.TSDATAID = tesd01.TSDATAID
+    AND  def01.acmplnth = rpts02.TSDATAACMPLNTH
+    AND  rpts02.TSSNRIOID = rpts01.TSSNRIOID
+    AND  rpts02.ACMPLNTH = rpts01.ACMPLNTH
+    and  def01.DEFCD IS NOT NULL
+    <isNotEmpty property="projNo" prepend="AND">
+    	 rpts01.PROJNO = #projNo#
+    </isNotEmpty>
+    <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+    	 rpts01.CONNSEVRDSTCD = #connSevrDstcd#
+    </isNotEqual>
+    <isNotEmpty property="testStgeName" prepend="AND">
+     	 rpts01.TESTSTGENAME = #testStgeName#
+    </isNotEmpty>
+    <isNotEqual property="defCd" compareValue="00" prepend="AND">
+    	def01.DEFCD = #defCd#
+    </isNotEqual> 
+      <isNotEmpty property="tranCd" prepend="AND">
+    	tesd01.TRANCD like #tranCd#||'%'
+    </isNotEmpty>
+    <isNotEmpty property="testStartYMS">
+    	<isNotEmpty property="testEndYMS" prepend="AND">
+    	(SUBSTR(rpts01."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+    	OR  SUBSTR(rpts01."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+    	</isNotEmpty>
+    </isNotEmpty>
+     <dynamic prepend="ORDER BY">
+				<isNotEmpty property="sidx">
+					$sidx$ $sord$
+				</isNotEmpty>
+	</dynamic>
+	</select>
+	
+	<select id="getCountDefPrgsSts" resultClass="Integer">
+	/* statistics.xml_getCountDefPrgsSts_결함 총괄표 목록 갯수 */
+	SELECT COUNT(*)
+	FROM(SELECT 
+	       rptc01.TSCASEID          objId,
+	       rptc01.TSCASENAME        objName,
+	 	   rptc02.TSDATAID          tsdataId,
+	  	   rptc02.TSDATANAME        tsdataName,
+	  	   rptc02.ACMPLNTH          acmplNth,
+	  	   rptc02.TSDATAACMPLNTH    tsdataAcmplNth,
+           def01.DEFNO              defNo
+          ,(select dtailname 
+          	from mngcode01
+          	where dtailcd = rptc01.CONNSEVRDSTCD
+          		and  cdclmnname = 'CONNSEVRDSTCD'
+          	) connSevrDstcd
+		  ,rptc01.TRANCD           tranCd 
+		  ,rptc01.TRANNAME         tranName
+		  ,(case when def01.DEFCD = '01' then '신규'
+		         when def01.DEFCD = '02' then '배분'
+		         when def01.DEFCD = '03' then '수정완료'
+		         when def01.DEFCD = '04' then '승인'
+		         else '신규'
+		         END  )     	   defCd
+		  ,def01.DEFERRCD	       defErrCd
+	      ,def01.DEFREGID  		   defRegId
+	      ,def01.DEFREGNM  		   defRegNm
+	      ,def01.DEFREGYMS 		   defRegYMS
+	FROM RPTDEFT01 def01,
+	     RPTCASE01 rptc01,
+	     RPTCASE02 rptc02 
+	WHERE
+    	def01.tsdataid = rptc02.tsdataid
+    and def01.acmplnth = rptc02.TSDATAACMPLNTH
+    and rptc02.TSCASEID = rptc01.TSCASEID
+    and rptc02.ACMPLNTH = rptc01.ACMPLNTH
+    and def01.DEFCD IS NOT NULL
+    <isNotEmpty property="projNo" prepend="AND">
+    	rptc01.PROJNO = #projNo#
+    </isNotEmpty>
+    <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+    	rptc01.CONNSEVRDSTCD = #connSevrDstcd#
+    </isNotEqual>
+    <isNotEmpty property="testStgeName" prepend="AND">
+    	rptc01.TESTSTGENAME = #testStgeName#
+    </isNotEmpty>
+    <isNotEqual property="defCd" compareValue="00" prepend="AND">
+    	def01.DEFCD = #defCd#
+    </isNotEqual>
+    
+    <isNotEmpty property="tranCd" prepend="AND">
+    	rptc01.TRANCD = #tranCd#
+    </isNotEmpty>
+    <isNotEmpty property="testStartYMS">
+    	<isNotEmpty property="testEndYMS" prepend="AND">
+    	(SUBSTR(rptc01."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+    	OR  SUBSTR(rptc01."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+    	</isNotEmpty>
+    </isNotEmpty>
+
+    	UNION 
+	
+	SELECT
+	     rpts01.TSSNRIOID            objId,
+	     rpts01.tssnrioname          objName,
+ 	     rpts02.TSDATAID             tsdataId,
+	     rpts02.TSDATANAME           tsdataName,
+	     rpts02.ACMPLNTH             acmplNth,
+	     rpts02.TSDATAACMPLNTH       tsdataAcmplNth,
+         def01.DEFNO    	         defNo,
+         (select dtailname 
+          	from mngcode01
+          	where dtailcd = rpts01.CONNSEVRDSTCD
+          		and  cdclmnname = 'CONNSEVRDSTCD'
+          	) connSevrDstcd,
+		 tesd01.TRANCD   			  tranCd,
+  		 tesd01.TRANNAME 			  tranName,
+		(case when def01.DEFCD = '01' then '신규'
+		       when def01.DEFCD = '02' then '배분'
+		       when def01.DEFCD = '03' then '수정완료'
+		       when def01.DEFCD = '04' then '승인'
+		       else '신규'
+		       END  )     	       defCd,
+		def01.DEFERRCD             defErrCd,
+	    def01.DEFREGID             defRegId,
+	    def01.DEFREGNM             defRegNm,
+	    def01.DEFREGYMS            defRegYMS
+	FROM RPTDEFT01 def01,
+		 RPTSNRO01 rpts01,
+		 RPTSNRO02 rpts02,
+		 TESDATA01 tesd01 
+	WHERE
+         def01.tsdataid = rpts02.tsdataid
+    AND  def01.TSDATAID = tesd01.TSDATAID
+    AND  def01.acmplnth = rpts02.TSDATAACMPLNTH
+    AND  rpts02.TSSNRIOID = rpts01.TSSNRIOID
+    AND  rpts02.ACMPLNTH = rpts01.ACMPLNTH
+    and  def01.DEFCD IS NOT NULL
+    <isNotEmpty property="projNo" prepend="AND">
+    	 rpts01.PROJNO = #projNo#
+    </isNotEmpty>
+    <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+    	 rpts01.CONNSEVRDSTCD = #connSevrDstcd#
+    </isNotEqual>
+    <isNotEmpty property="testStgeName" prepend="AND">
+     	 rpts01.TESTSTGENAME = #testStgeName#
+    </isNotEmpty>
+    <isNotEqual property="defCd" compareValue="00" prepend="AND">
+    	def01.DEFCD = #defCd#
+    </isNotEqual> 
+    <isNotEmpty property="testStartYMS">
+    	<isNotEmpty property="testEndYMS" prepend="AND">
+    	(SUBSTR(rpts01."TESTSTARTYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#
+    	OR  SUBSTR(rpts01."TESTENDYMS", 1, 8) BETWEEN #testStartYMS# AND #testEndYMS#)
+    	</isNotEmpty>
+    </isNotEmpty>)a
+  
+	</select>
+</sqlMap>
