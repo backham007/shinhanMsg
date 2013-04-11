@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+ <sqlMap namespace="layout">
+ 	<!-- 전문레이아웃 기본조회 -->
+    <select id="getLayoutBasic" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.layout.dto.LayoutDto">
+        /* em_layout_layout.xml_getLayoutBasic_고재형 */
+       	  SELECT A.CHNLDSTCD
+        		,B.DTAILNAME CHNLDSTCDNAME
+        		,TRIM(A.TRANCD) TRANCD 
+				,TRIM(A.TRANNAME) TRANNAME
+				,A.FLDDIV
+				,(SELECT DTAILNAME
+				    FROM MNGCODE01
+				   WHERE CDCLMNNAME = 'FLDDIV'
+				     AND DTAILCD = A.FLDDIV) FLDDIVNAME
+				,TRIM(A.REFTRANCD) REFTRANCD
+				,A.WRITEID
+				,A.WRITENAME
+				,A.CRETNYMS
+				,A.LASTMODFIID
+				,A.LASTMODFIYMS
+				,A.RMARK      
+          FROM MNGLOUT01 A
+              ,MNGCODE01 B
+          WHERE A.TRANCD = #tranCd#
+           <isNotEmpty property="chnlDstcd">
+            AND A.CHNLDSTCD = #chnlDstcd#
+           </isNotEmpty>
+            AND B.CDCLMNNAME = 'CHLDIV'
+       	    AND B.DTAILCD = A.CHNLDSTCD
+    </select>
+    
+    <!-- 전문레이아웃 상세조회 -->
+    <select id="getListLayoutDetail" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.layout.dto.LayoutDetailDto">
+        /* em_layout_layout.xml_getLayoutDetail_고재형 */
+        SELECT    CHNLDSTCD
+				 ,TRIM(TRANCD) TRANCD
+				 ,FLDIO
+				 ,TRANNO
+				 ,FLDNAME
+				 ,FLDDATA
+				 ,FLDDIV
+				 ,FLDTYPE
+				 ,CASE WHEN RPTNAME IS NOT NULL AND RPTNAME != '' THEN '04' 
+				       WHEN FLDNAME IN (SELECT RPTNAME
+				 						FROM MNGLOUT02
+								         WHERE CHNLDSTCD = #chnlDstcd#
+								           AND TRANCD = #tranCd#) THEN '03'
+					  ELSE '01' END FLDATTRIB
+				 ,FLDATTRIB FLDATTRIB2
+				 ,REQYN
+				 ,EDITYN
+				 ,TSCSFLDSIZE
+				 ,TSCSFLDDESC
+				 ,RANTYPE
+				 ,FILLDATA
+				 ,RPTNAME
+				 ,LASTMODFIID
+				 ,LASTMODFIYMS
+				 ,RMARK    
+          FROM MNGLOUT02
+         WHERE CHNLDSTCD = #chnlDstcd#
+           AND TRANCD = #tranCd#
+         <isNotEmpty property="fldIO">
+           AND (FLDIO = #fldIO# OR FLDIO = 'B') 
+         </isNotEmpty>
+         <isNotEmpty property="fldName">
+           AND RPTNAME = #fldName#
+         </isNotEmpty>
+        ORDER BY TRANNO
+    </select>
+    
+    <!-- 레이아웃기본 저장 -->
+    <insert id="registerLayoutBasic" parameterClass="com.igo.testro.msg.layout.dto.LayoutDto">
+    	/* em_layout_layout.xml_registerLayoutBasic_고재형 */
+    	INSERT INTO MNGLOUT01
+		(
+			CHNLDSTCD
+		    ,TRANCD
+		    ,TRANNAME
+		    ,FLDDIV
+		    ,REFTRANCD
+		    ,WRITEID
+		    ,WRITENAME
+		    ,CRETNYMS
+		    ,LASTMODFIID
+		    ,LASTMODFIYMS
+		    ,RMARK
+		)
+		VALUES
+		(
+			#chnlDstcd#
+		    ,#tranCd#
+		    ,#tranName#
+		    ,#fldDiv#
+		    ,#refTranCd#
+		    ,#writeId#
+		    ,#writeName#
+		    ,#cretnYMS#
+		    ,#lastModfiId#
+		    ,#lastModfiYMS#
+		    ,''
+		)
+    </insert>
+    
+    <!-- 레이아웃상세 저장 -->
+    <insert id="registerLayoutDetail" parameterClass="com.igo.testro.msg.layout.dto.LayoutDetailDto">
+    	/* em_layout_layout.xml_registerLayoutDetail_고재형 */
+    	INSERT INTO MNGLOUT02
+		(
+			  CHNLDSTCD
+			 ,TRANCD
+			 ,FLDIO
+			 ,TRANNO
+			 ,FLDNAME
+			 ,FLDDATA
+			 ,FLDDIV
+			 ,FLDTYPE
+			 ,FLDATTRIB
+			 ,REQYN
+			 ,EDITYN
+			 ,TSCSFLDSIZE
+			 ,TSCSFLDDESC
+			 ,RANTYPE
+			 ,FILLDATA
+			 ,RPTNAME
+			 ,LASTMODFIID
+			 ,LASTMODFIYMS
+			 ,RMARK
+		)
+		VALUES
+		(
+			  #chnlDstcd#
+			 ,#tranCd#
+			 ,#fldIO#
+			 ,#tranNO#
+			 ,#fldName#
+			 ,#fldData#
+			 ,#fldDiv#
+			 ,#fldType#
+			 ,#fldAttrib2#
+			 ,#reqYn#
+			 ,#editYn#
+			 ,#tscsFldSize#
+			 ,#tscsFldDesc#
+			 ,#ranType#
+			 ,#fillData#
+			 ,#rptName#
+			 ,#lastModfiId#
+			 ,#lastModfiYMS#
+			 ,#rmark#
+		)
+    </insert>
+    
+    <!-- 레이아웃기본 삭제 -->
+    <delete id="deleteLayoutBasic" parameterClass="java.util.Map">
+    	/* em_layout_layout.xml_deleteLayoutBasic_고재형 */
+    	DELETE FROM MNGLOUT01
+    	 WHERE CHNLDSTCD = #chnlDstcd#
+           AND TRANCD = #tranCd#
+    </delete>
+    
+    <!-- 레이아웃상세 삭제 -->
+    <delete id="deleteLayoutDetail" parameterClass="java.util.Map">
+    	/* em_layout_layout.xml_deleteLayoutDetail_고재형 */
+    	DELETE FROM MNGLOUT02
+    	 WHERE CHNLDSTCD = #chnlDstcd#
+           AND TRANCD = #tranCd#  
+    </delete>
+     
+     
+    <select id="getCnt" resultClass="Integer" parameterClass="java.util.Map">
+		 /* em_layout_layout.xml_getCnt_박철화 */
+		SELECT count(*) 
+		  FROM MNGLOUT01
+		 WHERE 1=1
+		<isNotEmpty property="chnlDstcd" prepend="AND">
+			"CHNLDSTCD" = #chnlDstcd#
+		</isNotEmpty>
+		<isNotEmpty property="tranCd" prepend="AND">
+			"TRANCD" LIKE '%'||#tranCd#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="tranName" prepend="AND">
+			"TRANNAME" LIKE '%'||#tranName#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="fldDiv" prepend="AND">
+			"FLDDIV" = #fldDiv#
+		</isNotEmpty>
+	</select>
+	
+	<select id="getListLayout" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.layout.dto.LayoutDto">
+		 /* em_layout_layout.xml_getListLayout_박철화 */
+		SELECT "CHNLDSTCD", 
+			   TRIM("TRANCD") TRANCD, 
+			   TRIM("TRANNAME") TRANNAME, 
+			   "FLDDIV", 
+			   TRIM("REFTRANCD") REFTRANCD 
+		  FROM MNGLOUT01
+		WHERE 1=1
+		<isNotEmpty property="chnlDstcd" prepend="AND">
+			"CHNLDSTCD" = #chnlDstcd#
+		</isNotEmpty>
+		<isNotEmpty property="tranCd" prepend="AND">
+			"TRANCD" LIKE '%'||#tranCd#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="tranName" prepend="AND">
+			"TRANNAME" LIKE '%'||#tranName#||'%'
+		</isNotEmpty>
+		<isNotEmpty property="fldDiv" prepend="AND">
+			"FLDDIV" = #fldDiv#
+		</isNotEmpty>
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+				"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<!-- 레이아웃변경로그 입력 -->
+	<insert id="registerLayoutLog" parameterClass="java.util.Map">
+		/* em_layout_layout.xml_registerLayoutLog_고재형 */
+		INSERT INTO MNGLOUT03
+			(
+				CHNLDSTCD,
+				TRANCD,
+				SEQNO,
+				TRANNAME,
+				CONTENT,
+				WRITEID,
+				WRITENAME,
+				DELYMS
+			)
+			VALUES
+			(
+				#chnlDstcd#,
+				#tranCd#,
+				(SELECT CASE WHEN MAX(SEQNO) IS NULL THEN 1 ELSE MAX(SEQNO)+1 END
+				  FROM MNGLOUT03
+				 WHERE CHNLDSTCD = #chnlDstcd#
+				   AND TRANCD = #tranCd#),
+				#tranName#,
+				#content#,
+				#writeId#,
+				#writeName#,
+				#delYMS#
+			)
+	</insert>
+	
+</sqlMap>
+
+   

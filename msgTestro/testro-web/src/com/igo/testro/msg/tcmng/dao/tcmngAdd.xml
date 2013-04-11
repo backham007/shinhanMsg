@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="tcmngAdd">
+	<select id="getTcTotCnt" parameterClass="java.util.Map" resultClass="Integer">
+	/* em_tcmng_tcmngAdd.xml_getTcTotCnt_김성진 */
+        select 
+			COUNT(*)
+		from TESCASE01
+		where DELYN = 'N'
+		<dynamic>
+			<isNotEmpty property="tsCaseID"  prepend="AND">
+		 		TSCASEID LIKE '%'||#tsCaseID#||'%'
+			</isNotEmpty>
+		 	<isNotEmpty property="tsCaseName" prepend="AND">
+				TSCASENAME LIKE '%'||#tsCaseName#||'%'
+			</isNotEmpty>
+		 	<isNotEmpty property="tsCaseDesc" prepend="AND">
+				TSCSBNDLDESC LIKE '%'||#tsCaseDesc#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="writeName" prepend="AND">
+				WRITENAME LIKE '%'||#writeName#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="startDt" prepend="AND">
+				SUBSTR(CRETNYMS, 1, 8) &gt;= #startDt#
+			</isNotEmpty>
+			<isNotEmpty property="endDt" prepend="AND">
+				SUBSTR(CRETNYMS, 1, 8) &lt;= #endDt#
+			</isNotEmpty>
+			<isNotEmpty property="tranCd"  prepend="AND">
+	 			TRANCD LIKE '%'||#tranCd#||'%'
+			</isNotEmpty>
+		</dynamic>
+    </select>
+
+    <select id="getTcTotList" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.tcmng.dto.TcDto">
+    /* em_tcmng_tcmngAdd.xml_getTcTotList_김성진 */
+        select 
+			TSCASEID,
+			TSCASENAME,
+			TSCASEDESC,
+			WRITEID,
+			WRITENAME,
+			RMARK,
+			LASTMODFIID,
+			TRANCD,
+			TRANNAME,
+			CHNLDSTCD,
+			SUBSTR(CRETNYMS, 1, 8) as CRETNYMS
+		from TESCASE01
+		where DELYN = 'N'
+		<dynamic>
+			<isNotEmpty property="tsCaseID"  prepend="AND">
+		 		TSCASEID LIKE '%'||#tsCaseID#||'%'
+			</isNotEmpty>
+		 	<isNotEmpty property="tsCaseName" prepend="AND">
+				TSCASENAME LIKE '%'||#tsCaseName#||'%'
+			</isNotEmpty>
+		 	<isNotEmpty property="tsCaseDesc" prepend="AND">
+				TSCSBNDLDESC LIKE '%'||#tsCaseDesc#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="writeName" prepend="AND">
+				WRITENAME LIKE '%'||#writeName#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="startDt" prepend="AND">
+				SUBSTR(CRETNYMS, 1, 8) &gt;= #startDt#
+			</isNotEmpty>
+			<isNotEmpty property="endDt" prepend="AND">
+				SUBSTR(CRETNYMS, 1, 8) &lt;= #endDt#
+			</isNotEmpty>
+			<isNotEmpty property="tranCd"  prepend="AND">
+	 			TRANCD LIKE '%'||#tranCd#||'%'
+			</isNotEmpty>
+			<isNotEmpty property="sidx" prepend="ORDER BY">
+			$sidx$ $sord$
+			</isNotEmpty>
+		</dynamic>
+    </select>
+    
+    <select id="getTdTotCnt" parameterClass="java.util.Map" resultClass="Integer">
+    /* em_tcmng_tcmngAdd.xml_getTdTotCnt_김성진 */
+        select 
+			COUNT(*)
+		from TESDATA01 TD01, TESCASE01 TC01, TESCASE02 TC02
+		where TD01.TSDATAID = TC02.TSDATAID
+		and TC02.TSCASEID = TC01.TSCASEID
+		and TD01.DELYN = 'N'
+		and TC02.TSCASEID = #tsCaseID#
+    </select>
+
+    <select id="getTdTotList" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmngAdd.xml_getTdTotList_김성진 */
+        select 
+			TD01.TSDATAID,
+			TD01.TSDATANAME,
+			TD01.TSDATADESC,
+			TD01.WRITENAME,
+			SUBSTR(TD01.CRETNYMS, 1, 8) as CRETNYMS,
+			CASE WHEN TD01.CHKYN = 'Y' THEN '설정'
+				 WHEN TD01.CHKYN = 'N' THEN '미설정'
+				 WHEN TD01.CHKYN = '' THEN '미설정' END CHKYN,
+			TD01.TRANCD,
+			TD01.CHNLDSTCD
+		from TESDATA01 TD01, TESCASE01 TC01, TESCASE02 TC02
+		where TD01.TSDATAID = TC02.TSDATAID
+		and TC02.TSCASEID = TC01.TSCASEID
+		and TD01.DELYN = 'N'
+		and TC02.TSCASEID = #tsCaseID#
+		order by TC02.TSCASENO asc
+    </select>
+    
+	<select id="getTdDetailList" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+	/* em_tcmng_tcmngAdd.xml_getTdDetailList_김성진 */
+        select 
+			TSDATAFLDNAME,
+			TSDATAFLDDATA,
+			TSCSFLDDIV,
+			TSCSFLDTYPE,
+			TSCSFLDATTRIB,
+			TSCSFLDSIZECNT,
+			TSCSFLDDESC,
+			TSCSUSRFLDDESC,
+			RPTCNTNAME,
+			RPTNAME,
+			RPTCNT
+		from TESDATA02
+		where TSDATAID = #tsdataID#
+		and TSCSFLDDIV = #tscsFldDiv#
+		order by TSDATANO asc
+    </select>
+    
+</sqlMap>

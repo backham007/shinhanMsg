@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="PopUserPass">
+
+	<update id="userPassSave" parameterClass="com.igo.testro.msg.cmn.dto.PopUserPassDto">
+	/* em_cmn_PopUserPass.xml_userPassSave_노찬균  */
+		UPDATE MNGUSER01
+		SET 
+			USRPWD=#newPass1#,
+			LASTMODFIID=#usrID#,
+			LASTMODFIYMS=#lastModfiYMS#
+		WHERE USRID = #usrID# and
+			USRPWD =#oldPass#
+	</update>
+	
+</sqlMap>

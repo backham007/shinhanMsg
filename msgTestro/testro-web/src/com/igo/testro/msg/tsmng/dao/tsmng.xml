@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="tsmng">
+	<!-- 테스트 시나리오 정보 조회 -->
+    <select id="getTsBasicInfo" resultClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsmng.xml_getTsBasicInfo_김기태 */
+        SELECT *
+        FROM TESSNRO01 snr01
+        WHERE snr01.delYn = 'N'
+            AND snr01.tsSnrioID = #tsSnrioID#
+    </select>
+    
+    <!-- 입출력값 활용 정보 조회 -->
+    <select id="getListIoDataUseDTO" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.tsmng.dto.IODataUseDTO">
+        /* msg_tsmng_tsmng.xml_getListIoDataUseDTO_김기태 */
+        SELECT
+            snr3.tsSnrioID
+            , snr3.tsSnrioNO
+            , snr3.tsIONO
+            , (CASE
+                WHEN snr3.tscsFldAttrib = '05' THEN '입력'
+                WHEN snr3.tscsFldAttrib = '06' THEN '출력'
+                ELSE ''
+                END) AS divisionIO
+            , snr3.tscsFldAttrib
+            , TRIM(snr3.preSnrioNO) preSnrioNO
+            , snr3.preFldDiv
+            , snr3.preFldName
+            , snr3.preFldDesc
+            , snr3.preFldAttrib
+            , snr3.preFldRptName
+            , TRIM(snr3.preFldRptCnt) preFldRptCnt
+            , CASE WHEN (snr3.preFldAttrib = '03' OR snr3.preFldAttrib = '04') AND snr3.preFldRptCnt IS NULL 
+            	   THEN snr3.preFldName || '(' || snr3.preFldDesc || ')' || ' [전체]'
+            	   WHEN (snr3.preFldAttrib = '03' OR snr3.preFldAttrib = '04') AND snr3.preFldRptCnt IS NOT NULL 
+            	   THEN snr3.preFldName || '(' || snr3.preFldDesc || ')' || ' ['||TRIM(snr3.preFldRptCnt)||'회차]'
+                   ELSE snr3.preFldName || '(' || snr3.preFldDesc || ')'
+                   END preFld
+            , snr3.useFldDiv
+            , snr3.useFldName
+            , snr3.useFldDesc
+            , snr3.useFldAttrib
+            , snr3.useFldRptName
+            , TRIM(snr3.useFldRptCnt) useFldRptCnt
+            , CASE WHEN (snr3.useFldAttrib = '03' OR snr3.useFldAttrib = '04') AND snr3.useFldRptCnt IS NULL 
+            	   THEN snr3.useFldName || '(' || snr3.useFldDesc || ')' || ' [전체]'
+            	   WHEN (snr3.useFldAttrib = '03' OR snr3.useFldAttrib = '04') AND snr3.useFldRptCnt IS NOT NULL 
+            	   THEN snr3.useFldName || '(' || snr3.useFldDesc || ')' || ' ['||TRIM(snr3.useFldRptCnt)||'회차]'
+                   ELSE snr3.useFldName || '(' || snr3.useFldDesc || ')'
+                   END useFld
+            , snr3.cndnStylCtnt
+            , snr3.lastModfiID
+            , snr3.lastModfiYMS
+            , snr3.rmark
+        FROM TESSNRO03 snr3
+        WHERE snr3.tsSnrioID = #tsSnrioID#
+            AND snr3.tsSnrioNO = #tsSnrioNO#
+        ORDER BY snr3.tsIONO
+    </select>
+    
+	<!-- 테스트 시나리오 기본정보 저장 -->
+    <insert id="registerTsBasicInfo" parameterClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsmng.xml_registerTsBasicInfo_김기태 */
+        INSERT
+        INTO TESSNRO01 (
+	        TSSNRIOID
+			,TSSNRIONAME
+			,TSSNRIODESC
+			,CHNLDSTCD
+			,MGRLVELDSTCD
+			,OSIDOFERYN
+			,DELYN
+			,WRITEID
+			,WRITENAME
+			,CRETNYMS
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES(
+            #tsSnrioID#
+            , #tsSnrioName:VARCHAR#
+            , #tsSnrioDesc:VARCHAR#
+            , #chnlDstcd:CHAR#
+            , #mgrLvelDstcd:CHAR#
+            , #osidOferYn:CHAR#
+            , 'N'
+            , #writeID:VARCHAR#
+            , #writeName:VARCHAR#
+            , #cretnYMS:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:VARCHAR#
+            , #rmark:VARCHAR#
+        )
+    </insert>
+    
+    <!-- 테스트 시나리오 상세 정보 저장 -->
+    <insert id="registerTsDetailInfo" parameterClass="com.igo.testro.msg.tsmng.dto.TestSnrioDetailDTO">
+        /* msg_tsmng_tsmng.xml_registerTsDetailInfo_김기태 */
+        INSERT
+        INTO TESSNRO02 (
+        	TSSNRIOID
+			,TSSNRIONO
+			,TSCASEID
+			,TSDATAID
+			,TSDATANAME
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES (
+        	#tsSnrioID#
+            , #tsSnrioNO#
+            , #tsCaseID:VARCHAR#
+            , #tsdataID:VARCHAR#
+            , #tsdataName:VARCHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:VARCHAR#
+            , #rmark:VARCHAR#)
+    </insert>
+    
+    <select id="getListTdInfo" parameterClass="list" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+        /* msg_tsmng_tsmng.xml_getListTdInfo_김기태 */
+        SELECT tsdataID
+             , tsdataName
+             , chnlDstcd
+             , tranCd
+             , tranName
+             , cretnYMS
+        FROM TESDATA01
+        WHERE delYN = 'N'
+        <dynamic prepend="AND">
+            <iterate conjunction="," open="tsdataID IN(" close=")">
+                #[]#
+            </iterate>
+        </dynamic>
+    </select>
+    
+    <insert id="registerIODataUseInfo" parameterClass="com.igo.testro.msg.tsmng.dto.IODataUseDTO">
+        /* msg_tsmng_tsmng.xml_registerIODataUseInfo_김기태 */
+        INSERT
+        INTO TESSNRO03 (
+        	TSSNRIOID
+			,TSSNRIONO
+			,TSIONO
+			,TSCSFLDATTRIB
+			,PRESNRIONO
+			,PREFLDDIV
+			,PREFLDNAME
+			,PREFLDDESC
+			,PREFLDATTRIB
+			,PREFLDRPTNAME
+			,PREFLDRPTCNT
+			,USEFLDDIV
+			,USEFLDNAME
+			,USEFLDDESC
+			,USEFLDATTRIB
+			,USEFLDRPTNAME
+			,USEFLDRPTCNT
+			,CNDNSTYLCTNT
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES (
+        	#tsSnrioID#
+            , #tsSnrioNO#
+            , #tsIONO#
+            , #tscsFldAttrib:CHAR#
+            , #preSnrioNO:CHAR#
+            , #preFldDiv:CHAR#
+            , #preFldName:VARCHAR#
+            , #preFldDesc:VARCHAR#
+            , #preFldAttrib:CHAR#
+            , #preFldRptName:VARCHAR#
+            , #preFldRptCnt:CHAR#
+            , #useFldDiv:CHAR#
+            , #useFldName:VARCHAR#
+            , #useFldDesc:VARCHAR#
+            , #useFldAttrib:CHAR#
+            , #useFldRptName:VARCHAR#
+            , #useFldRptCnt:CHAR#
+            , #cndnStylCtnt:VARCHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:CHAR#
+            , #rmark:VARCHAR#)
+    </insert>
+    
+    <!-- 테스트 시나리오 기본 정보 수정 -->
+    <update id="modifyTsBasicInfo" parameterClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsmng.xml_modifyTsBasicInfo_김기태 */
+        UPDATE TESSNRO01
+        SET tsSnrioName = #tsSnrioName#
+            , tsSnrioDesc = #tsSnrioDesc#
+            , lastModfiID = #lastModfiID#
+            , lastModfiYMS = #lastModfiYMS#
+        WHERE tsSnrioID = #tsSnrioID#
+    </update>
+    
+    <!-- 테스트 시나리오 상세 정보 삭제 -->
+    <delete id="deleteTsDetailInfo" parameterClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsmng.xml_deleteTsDetailInfo_김기태 */
+        DELETE FROM TESSNRO02
+        WHERE tsSnrioID = #tsSnrioID#
+    </delete>
+    
+    <!-- 입출력값 활용 삭제 -->
+    <delete id="deleteIODataUseInfo" parameterClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsmng.xml_deleteIODataUseInfo_김기태 */
+        DELETE FROM TESSNRO03
+        WHERE tsSnrioID = #tsSnrioID#
+    </delete>
+    
+    <!-- 테스트 데이터 기본 저장 -->
+    <insert id="registerTdBasicInfo" parameterClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+        /* msg_tsmng_tsmng.xml_registerTdBasicInfo_김기태 */
+        INSERT
+        INTO TESDATA01 (
+        	TSDATAID
+			,TSDATANAME
+			,TSDATADESC
+			,CHNLDSTCD
+			,SCRPTID
+			,TRANCD
+			,TRANNAME
+			,MGRLVELDSTCD
+			,CREATEDIVCD
+			,OSIDOFERYN
+			,CHKYN
+			,DELYN
+			,WRITEID
+			,WRITENAME
+			,CRETNYMS
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES(
+            #tsdataID#
+            , #tsdataName#
+            , #tsdataDesc:VARCHAR#
+            , #chnlDstcd:CHAR#
+            , #scrptID:VARCHAR#
+            , #tranCd:VARCHAR#
+            , #tranName:VARCHAR#
+            , #mgrLvelDstcd:VARCHAR#
+            , #createDivCd:CHAR#
+            , #osidOferYn:CHAR#
+            , #chkYN:CHAR#
+            , 'N'
+            , #writeID:VARCHAR#
+            , #writeName:VARCHAR#
+            , #cretnYMS:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:VARCHAR#
+            , ''
+        )
+    </insert>
+    
+    <!-- 테스트 데이터 상세 저장 -->
+    <insert id="registerTdDetailInfo" parameterClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+        /* msg_tsmng_tsmng.xml_registerTdDetailInfo_김기태 */
+        INSERT
+        INTO TESDATA02 (
+        	TSDATAID
+			,TSDATANO
+			,TSDATAFLDNAME
+			,TSDATAFLDDATA
+			,TSCSFLDDIV
+			,TSCSFLDTYPE
+			,TSCSFLDATTRIB
+			,TSCSFLDSIZECNT
+			,TSCSFLDDESC
+			,TSCSUSRFLDDESC
+			,RPTCNTNAME
+			,RPTNAME
+			,RPTCNT
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES (
+        	#tsdataID#
+            , #tsdataNO#
+            , #tsdataFldName:VARCHAR#
+            , #tsdataFldData:VARCHAR#
+            , #tscsFldDiv:CHAR#
+            , #tscsFldType:VARCHAR#
+            , #tscsFldAttrib:CHAR#
+            , #tscsFldSizeCnt:VARCHAR#
+            , #tscsFldDesc:VARCHAR#
+            , #tscsUsrFldDesc:VARCHAR#
+            , #rptCntName:VARCHAR#
+            , #rptName:VARCHAR#
+            , #rptCnt:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS#
+            , ''
+        )
+    </insert>
+    
+    <!-- 체크포인트 저장 -->
+    <insert id="registerCheckPoint" parameterClass="com.igo.testro.msg.tcmng.dto.CheckPointDTO">
+        /* msg_tsmng_tsmng.xml_registerCheckPoint_김기태 */
+        INSERT
+        INTO TESCHEK01 (
+        	TSDATAID
+			,CHKNO
+			,TSDATADESC
+			,TSDATAFLDNAME
+			,TSCSFLDDESC
+			,TSCSUSRFLDDESC
+			,CHKPOINTEXPCCTNT
+			,TSCSFLDDIV
+			,TSCSFLDTYPE
+			,TSCSFLDATTRIB
+			,CHKYN
+			,RPTCNTNAME
+			,RPTNAME
+			,RPTCNT
+			,WRITEID
+			,WRITENAME
+			,CRETNYMS
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        ) VALUES (
+        	#tsdataID#
+            , #chkNO#
+            , #tsdataDesc:VARCHAR#
+            , #tsdataFldName:VARCHAR#
+            , #tscsFldDesc:VARCHAR#
+            , #tscsUsrFldDesc:VARCHAR#
+            , #chkPointExpcCtnt:VARCHAR#
+            , #tscsFldDiv:CHAR#
+            , #tscsFldType:VARCHAR#
+            , #tscsFldAttrib:CHAR#
+            , #chkYN:CHAR#
+            , #rptCntName:VARCHAR#
+            , #rptName:VARCHAR#
+            , #rptCnt:CHAR#
+            , #writeID:VARCHAR#
+            , #writeName:VARCHAR#
+            , #cretnYMS:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS#
+            , ''
+       )
+    </insert>
+    
+    <!-- 테스트 데이터 기본 정보 조회 -->
+    <select id="getTdBaseInfo" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+        /* msg_tsmng_tsmng.xml_getTdBaseInfo_김기태 */
+        SELECT *
+        FROM TESDATA01 data01
+        WHERE data01.delYn = 'N'
+            AND data01.tsdataID = #tsdataID#
+    </select>
+    
+    <!-- 테스트데이터 상세 정보 조회 -->
+    <select id="getListTdList" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+        /* msg_tsmng_tsmng.xml_getListTdList_김기태 */
+        SELECT TSDATAID
+			  ,TSDATANO
+			  ,TSDATAFLDNAME
+			  ,TSDATAFLDDATA
+			  ,TSCSFLDDIV
+			  ,TSCSFLDTYPE
+			  ,TSCSFLDATTRIB
+			  ,TSCSFLDSIZECNT
+			  ,TSCSFLDDESC
+			  ,TSCSUSRFLDDESC
+			  ,RPTCNTNAME
+			  ,RPTNAME
+			  ,RPTCNT
+			  ,LASTMODFIID
+			  ,LASTMODFIYMS
+			  ,RMARK
+        FROM TESDATA02 data02
+        WHERE data02.tsdataID = #tsdataID#
+        <isNotEmpty property="tscsFldDiv">
+            AND data02.tscsFldDiv = #tscsFldDiv#
+        </isNotEmpty>
+        ORDER BY data02.tsdataNO
+    </select>
+    
+    <!-- 체크포인트 조회 -->
+    <select id="getListCheckPoint" resultClass="com.igo.testro.msg.tcmng.dto.CheckPointDTO">
+        /* msg_tsmng_tsmng.xml_getListCheckPoint_김기태 */
+        SELECT tsdataID
+            , chkNO
+            , tsdataDesc
+            , tsdataFldName
+            , tscsFldDesc
+            , tscsUsrFldDesc
+            , chkPointExpcCtnt
+            , chkYN
+            , tscsFldDiv
+            , tscsFldType
+            , tscsFldAttrib
+            , rptCntName
+            , rptName
+            , rptCnt
+            , writeID
+            , writeName
+            , cretnYMS
+            , lastModfiID
+            , lastModfiYMS
+            , rmark  
+            , tsdataFldName || '(' || tscsFldDesc || ')' AS tsdataFld
+        FROM TESCHEK01
+        WHERE tsdataID = #tsdataID#
+        ORDER BY chkNO
+    </select>
+</sqlMap>

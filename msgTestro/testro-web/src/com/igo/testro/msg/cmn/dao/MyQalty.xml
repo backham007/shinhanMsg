@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="MyQalty">
+	<select id="selectList" parameterClass="Map" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_selectList_노찬균  */
+        select *from TESINFO01
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+    </select>
+
+    <select id="getCnt" resultClass="Integer">
+    /* em_cmn_MyQalty.xml_getCnt_노찬균  */
+		select count(*) 
+		from TESINFO01
+		<isNotEmpty property="projName" prepend="WHERE">
+			PROJNAME LIKE '%'||#projName#||'%'
+		</isNotEmpty> 
+	</select>
+	
+	<select id="getlist" parameterClass="Map" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_getlist_노찬균  */
+		select PROJNO,
+			PROJNAME,
+			TESTSTGENAME,
+			TESTSTARTYMS,
+			TESTENDYMS,
+			PROJNO as EDITYN
+		from TESINFO01
+		<isNotEmpty property="projName" prepend="WHERE">
+			PROJNAME LIKE '%'||#projName#||'%'
+		</isNotEmpty> 
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countMyQaltyInfo" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_countMyQaltyInfo_노찬균  */
+		SELECT COUNT(*) cntYn
+		FROM   MNGUSER02
+		WHERE  "USRID" = #lastModfiEmpid#
+	</select>
+	
+	<select id="countRptCase01" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_countRptCase01_노찬균  */
+		SELECT COUNT(*) cntYn
+		FROM   RPTCASE01
+		WHERE  PROJNO = #projNo#
+	</select>
+	
+	<select id="countRptSNRO01" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_countRptNRO01_노찬균  */
+		SELECT COUNT(*) cntYn
+		FROM   RPTSNRO01
+		WHERE  PROJNO = #projNo#
+	</select>
+	
+	<update id="userUpdateMyQaltyList" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_userUpdateMyQaltyList_노찬균  */
+		UPDATE MNGUSER02 
+		SET "DELYN" ='N'
+		WHERE  "USRID" = #lastModfiEmpid#
+	</update>
+	
+	<insert id="registerMyQaltyList" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_registerMyQaltyList_노찬균  */
+		INSERT INTO MNGUSER02 (
+			USRID
+			,TESTNO
+			,DEFAULTTEST
+			,PROJNO
+			,PROJNAME
+			,TESTSTGENAME
+			,CONNSEVRDSTCD
+			,LOUTURLADDR
+			,LGINURLADDR
+			,DELYN
+			,LASTMODFIID
+			,LASTMODFIYMS 
+			,RMARK      
+		)
+		VALUES (
+			#lastModfiEmpid#
+			,'01'
+			,'1'
+			,#projNo#
+			,#projName#
+			,#testStgeName#
+			,'01'
+			,''
+			,''
+			,'N'
+			,#lastModfiEmpid#
+			,#lastModfiYMS#
+			,''
+		)
+	</insert>
+	
+	<update id="updateMyQaltyList" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_updateMyQaltyList_노찬균  */
+		UPDATE MNGUSER02 
+		SET "PROJNO" =#projNo#
+			,"PROJNAME"=#projName#
+			,"TESTSTGENAME"=#testStgeName#
+			,"RMARK"=''
+			,"LASTMODFIID"=#lastModfiEmpid#
+			,"LASTMODFIYMS"= #lastModfiYMS#
+		WHERE  "USRID" = #lastModfiEmpid#
+	</update>
+	
+	<update id="registerTestEnvi" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_registerTestEnvi_노찬균  */
+		UPDATE MNGUSER02
+		SET CONNSEVRDSTCD=#connSevrDstcd#
+			,LASTMODFIID=#lastModfiEmpid#
+			,LASTMODFIYMS=#lastModfiYMS#
+		WHERE USRID = #lastModfiEmpid#
+	</update>
+	
+	<select id="saveCheck" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_saveCheck_노찬균  */
+		SELECT COUNT(*) cntYn
+		FROM   TESINFO01
+		WHERE  "PROJNO" = #projNo#
+	</select>
+	
+	<insert id="saveTestEnvi" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_saveTestEnvi_노찬균  */
+		insert into TESINFO01(
+				"PROJNO"
+				,"TESTSTGENAME"
+				,"PROJNAME"
+				,"TESTSTARTYMS"
+				,"TESTENDYMS"
+				,"LASTMODFIID"
+				,"LASTMODFIYMS"
+				,"RMARK"
+		)
+		values(
+				#projNo#
+				,#testStgeName#
+				,#projName#
+				,#testStartYMS#
+				,#testEndYMS#
+				,#lastModfiEmpid#
+				,#lastModfiYMS#
+				,''
+		)
+	</insert>
+
+	<delete id="getProjectDelete" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_MyQalty.xml_getProjectDelete_노찬균  */	
+        DELETE FROM TESINFO01 
+        WHERE 
+        	"PROJNO" = #projNo# and
+        	"TESTSTGENAME" = #testStgeName#
+    </delete>
+    
+</sqlMap>

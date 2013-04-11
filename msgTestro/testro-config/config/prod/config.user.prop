@@ -1,0 +1,67 @@
+test.data=이강우
+
+#접속서버리스트(코드:한글명:영문명 복수일경우','[콤마]로 구분)
+CONN_SEVER_LIST=01:개발:DEV,02:테스트:TEST,03:스테이징:STAY
+## PROTOCOL종류 (HTTP_GET,HTTP_POST,SOCKET)
+## ====================================================
+##MCI 채널별 통신 접속 정보(개발:DEV)
+## 단말
+DEV_TER_IP=221.141.1.100
+DEV_TER_PORT=12345
+DEV_TER_PROTOCOL=SOCKET
+## 자동화기기
+DEV_ATM_IP=221.141.1.100
+DEV_ATM_PORT=12345
+DEV_ATM_PROTOCOL=SOCKET
+## 인터넷뱅킹
+DEV_INB_IP=221.141.1.100
+DEV_INB_PORT=12345
+DEV_INB_PROTOCOL=SOCKET
+## 콜센터
+DEV_IVR_IP=221.141.1.100
+DEV_IVR_PORT=12345
+DEV_IVR_PROTOCOL=SOCKET
+## ====================================================
+##MCI 채널별 통신 접속 정보(테스트:TEST)
+## 단말
+TEST_TER_IP=221.141.1.100
+TEST_TER_PORT=12345
+TEST_TER_PROTOCOL=SOCKET
+## 자동화기기
+TEST_ATM_IP=221.141.1.100
+TEST_ATM_PORT=12345
+TEST_ATM_PROTOCOL=SOCKET
+## 인터넷뱅킹
+TEST_INB_IP=221.141.1.100
+TEST_INB_PORT=12345
+TEST_INB_PROTOCOL=SOCKET
+## 콜센터
+TEST_IVR_IP=221.141.1.100
+TEST_IVR_PORT=12345
+TEST_IVR_PROTOCOL=SOCKET
+## ====================================================
+##MCI 채널별 통신 접속 정보(스테이징:STAY)
+## 단말
+TEST_TER_IP=221.141.1.100
+TEST_TER_PORT=12345
+TEST_TER_PROTOCOL=SOCKET
+## 자동화기기
+TEST_ATM_IP=221.141.1.100
+TEST_ATM_PORT=12345
+TEST_ATM_PROTOCOL=SOCKET
+## 인터넷뱅킹
+TEST_INB_IP=221.141.1.100
+TEST_INB_PORT=12345
+TEST_INB_PROTOCOL=SOCKET
+## 콜센터
+TEST_IVR_IP=221.141.1.100
+TEST_IVR_PORT=12345
+TEST_IVR_PROTOCOL=SOCKET
+## ====================================================
+
+##테스트케이스 테스트데이터 등록 최대건수
+TC_DATA_MAX_CNT = 100
+##테스트시나리오 테스트데이터 등록 최대건수
+TS_DATA_MAX_CNT = 100
+#전문 소켓통신 타임아웃(milliseconds) 180000 = 3분
+SOCKET_TIME_OUT=180000

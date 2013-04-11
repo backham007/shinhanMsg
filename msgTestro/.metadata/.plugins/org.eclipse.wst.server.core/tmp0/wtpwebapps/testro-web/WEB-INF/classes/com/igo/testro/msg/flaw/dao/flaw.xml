@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="flaw">
+	<!-- 결함관리 조회 -->
+	<select id="getListFlaw" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.flaw.dto.FlawDto">
+ 		/* em_flaw_flaw.xml_getListFlaw_고재형 */
+ 		SELECT   A.TSDATAID
+				,A.ACMPLNTH
+				,A.DEFNO
+				,TRIM(A.TSCSTRANTYPECD) TSCSTRANTYPECD
+				,TRIM(A.TSCSDEFRNDSTCD) TSCSDEFRNDSTCD
+				,TRIM(A.DEFSEVERITY) DEFSEVERITY
+				,TRIM(A.PRIACTIONSCD) PRIACTIONSCD
+				,A.DEFERRCD
+				,A.DEFERRPRG
+				,A.TESTOPINCTNT
+				,A.DEFDISUSRID
+				,A.DEFDISUSRNM
+				,A.ACTUSRID
+				,A.ACTUSRNM
+				,TRIM(A.DEFCD) DEFCD
+				,TRIM(A.ACTCLOSEYMS) ACTCLOSEYMS
+				,A.DEFREGYMS
+				,A.DEFREGID
+				,A.DEFREGNM
+				,TRIM(A.DEFDOMAINCD) DEFDOMAINCD
+				,TRIM(A.DEFCAUSECD) DEFCAUSECD
+				,TRIM(A.DEFRESOLCD) DEFRESOLCD
+				,A.DEFACTCONTENT
+				,TRIM(A.RETESTYMS) RETESTYMS
+				,A.RETESTRSULT
+				,A.TREATFNSHYN
+				,A.TREATFNSHYMS
+				,A.LASTMODFIID
+				,A.LASTMODFIYMS
+				,A.RMARK
+ 		  FROM RPTDEFT01 A
+ 		 WHERE A.TSDATAID = #tsDataId#
+		   AND A.ACMPLNTH = #acmplNth#
+ 	</select>
+ 	
+ 	<!-- 결함관리 신규 -->
+ 	<insert id="registerFlaw" parameterClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_registerFlaw_고재형 */
+    	INSERT INTO RPTDEFT01
+		(
+			 TSDATAID
+			,ACMPLNTH
+			,DEFNO
+			,TSCSTRANTYPECD
+			,TSCSDEFRNDSTCD
+			,DEFSEVERITY
+			,PRIACTIONSCD
+			,DEFERRCD
+			,DEFERRPRG
+			,TESTOPINCTNT
+			,DEFDISUSRID
+			,DEFDISUSRNM
+			,ACTUSRID
+			,ACTUSRNM
+			,DEFCD
+			,ACTCLOSEYMS
+			,DEFREGYMS
+			,DEFREGID
+			,DEFREGNM
+			,LASTMODFIID
+			,LASTMODFIYMS
+			<isEqual property="defCd" compareValue="04">
+			,TREATFNSHYN
+			,TREATFNSHYMS
+			</isEqual>
+		)
+		VALUES
+		(
+			 #tsDataId#
+			,#acmplNth#
+			,(SELECT CASE WHEN MAX(DEFNO) IS NULL THEN 1 ELSE MAX(DEFNO)+1 END
+				FROM RPTDEFT01
+			   WHERE TSDATAID = #tsDataId#
+		   	     AND ACMPLNTH = #acmplNth#
+			 )
+			,#tscsTranTypeCd#
+			,#tscsDefRnDstCd#
+			,#defSeverity#
+			,#priActionsCd#
+			,#defErrCd#
+			,#defErrPrg#
+			,#testOpinCtnt#
+			,#defDisusrId#
+			,#defDisusrNm#
+			,#actUsrId#
+			,#actUsrNm#
+			,#defCd#
+			,#actCloseYMS#
+			,#defRegYMS#
+			,#defRegId#
+			,#defRegNm#
+			,#lastModfiId#
+			,#lastModfiYMS#
+			<isEqual property="defCd" compareValue="04">
+			,'Y'
+			,#lastModfiYMS#
+			</isEqual>
+		)
+    </insert>
+    
+    <!-- 결함관리 삭제 -->
+    <delete id="deleteFlaw" parameterClass="java.util.Map">
+    	/* em_flaw_flaw.xml_deleteFlaw_고재형 */
+    	DELETE FROM RPTDEFT01
+    	 WHERE TSDATAID = #tsDataId#
+		   AND ACMPLNTH = #acmplNth#
+		   AND DEFNO = #defNo#
+    </delete>
+
+	<!-- 결함관리 수정 -->
+	<update id="modifyFlaw" parameterClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_modifyFlaw_고재형 */
+    	UPDATE RPTDEFT01
+		   SET   TSCSTRANTYPECD = #tscsTranTypeCd#
+				,TSCSDEFRNDSTCD = #tscsDefRnDstCd#
+				,DEFSEVERITY    = #defSeverity#
+				,PRIACTIONSCD   = #priActionsCd#
+				,DEFERRCD       = #defErrCd#
+				,DEFERRPRG      = #defErrPrg#
+				,TESTOPINCTNT   = #testOpinCtnt#
+				,DEFDISUSRID    = #defDisusrId#
+				,DEFDISUSRNM    = #defDisusrNm#
+				,ACTUSRID       = #actUsrId#
+				,ACTUSRNM       = #actUsrNm#
+				,DEFCD          = #defCd#
+				,ACTCLOSEYMS    = #actCloseYMS#
+				,LASTMODFIID    = #lastModfiId#
+				,LASTMODFIYMS   = #lastModfiYMS#
+				<isEqual property="defCd" compareValue="04">
+				,TREATFNSHYN    = 'Y'
+				,TREATFNSHYMS   = #lastModfiYMS#
+				</isEqual>
+		WHERE TSDATAID = #tsDataId#   
+		  AND ACMPLNTH = #acmplNth#   
+		  AND DEFNO = #defNo#         
+    </update>
+    
+    <!-- 결함조치 수정 -->
+    <update id="modifyTreat" parameterClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_modifyTreat_고재형 */
+    	UPDATE RPTDEFT01
+		  SET    DEFDOMAINCD    = #defDomainCd#
+		        ,DEFCAUSECD     = #defCauseCd#
+		        ,DEFACTCONTENT  = #defActContent#
+		        <isNotEmpty property="reTestYMS">
+		        ,RETESTYMS      = #reTestYMS#
+		        </isNotEmpty>
+		        ,RETESTRSULT    = #reTestRsult#
+				,LASTMODFIID    = #lastModfiId#
+				,LASTMODFIYMS   = #lastModfiYMS#
+				,DEFCD          = #defCd#
+				<isEqual property="defCd" compareValue="04">
+				,TREATFNSHYN    = 'Y'
+				,TREATFNSHYMS   = #lastModfiYMS#
+				</isEqual>
+		WHERE TSDATAID = #tsDataId#   
+		  AND ACMPLNTH = #acmplNth#   
+		  AND DEFNO = #defNo#         
+    </update>
+    
+    <!-- 나의테스트케이스결함조회 건수 -->
+ 	<select id="getListMyTCFlawCnt" parameterClass="java.util.Map" resultClass="Integer">
+    	/* em_flaw_flaw.xml_getListMyTCFlawCnt_고재형 */
+	    SELECT count(*)
+		FROM TESINFO01 A,
+			 RPTCASE01 B,
+			 RPTCASE02 C,
+			 RPTDATA01 D,
+		     RPTDEFT01 E
+		WHERE A.PROJNO = B.PROJNO
+		  AND A.TESTSTGENAME = B.TESTSTGENAME
+		  AND B.TSCASEID = C.TSCASEID
+		  AND B.ACMPLNTH = C.ACMPLNTH
+		  AND C.TSDATAID = D.TSDATAID
+		  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+		  AND D.TSDATAID = E.TSDATAID
+		  AND D.ACMPLNTH = E.ACMPLNTH
+		  <isNotEmpty property="projNo">
+		  AND A.PROJNO = #projNo#
+		  </isNotEmpty>
+		  <isNotEmpty property="testStgeName">
+		  AND A.TESTSTGENAME = #testStgeName#
+		  </isNotEmpty>
+		  <isNotEqual property="defCd" compareValue="00">
+		  AND E.DEFCD = #defCd#
+		  </isNotEqual>
+		  AND (E.DEFDISUSRID = #usrId# OR E.ACTUSRID = #usrId#)
+    </select>
+    
+    <!-- 나의테스트케이스결함조회 -->
+    <select id="getListMyTCFlaw" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_getListMyTCFlaw_고재형 */
+    	SELECT A.PROJNAME
+			  ,A.TESTSTGENAME
+			  ,A.TSCASENAME
+			  ,A.ACMPLNTH
+			  ,A.TSCASEID
+			  ,A.TSDATAID
+			  ,A.TSDATAACMPLNTH
+			  ,A.TSDATANAME
+			  ,A.DEFNO
+			  ,A.DEFREGNM
+			  ,A.TSCSDEFRNDSTCD
+			  ,A.DEFCD
+			  ,A.DEFREGYMS
+			  ,A.TREATFNSHYMS
+		FROM (
+		    SELECT A.PROJNAME
+				  ,A.TESTSTGENAME
+				  ,B.TSCASENAME
+				  ,B.ACMPLNTH
+				  ,B.TSCASEID
+				  ,C.TSDATAID
+				  ,C.TSDATAACMPLNTH
+				  ,D.TSDATANAME
+				  ,E.DEFNO
+				  ,E.DEFREGNM
+				  ,E.TSCSDEFRNDSTCD
+				  ,TRIM(E.DEFCD) DEFCD
+				  ,E.DEFREGYMS
+				  ,E.TREATFNSHYMS
+			FROM TESINFO01 A,
+				 RPTCASE01 B,
+				 RPTCASE02 C,
+				 RPTDATA01 D,
+			     RPTDEFT01 E
+			WHERE A.PROJNO = B.PROJNO
+			  AND A.TESTSTGENAME = B.TESTSTGENAME
+			  AND B.TSCASEID = C.TSCASEID
+			  AND B.ACMPLNTH = C.ACMPLNTH
+			  AND C.TSDATAID = D.TSDATAID
+			  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+			  AND D.TSDATAID = E.TSDATAID
+			  AND D.ACMPLNTH = E.ACMPLNTH
+			  <isNotEmpty property="projNo">
+			  AND A.PROJNO = #projNo#
+			  </isNotEmpty>
+			  <isNotEmpty property="testStgeName">
+			  AND A.TESTSTGENAME = #testStgeName#
+			  </isNotEmpty>
+			  <isNotEqual property="defCd" compareValue="00">
+			  AND E.DEFCD = #defCd#
+			  </isNotEqual>
+			  AND (E.DEFDISUSRID = #usrId# OR E.ACTUSRID = #usrId#)
+			) A
+		<isNotEmpty property="sidx">
+		ORDER BY A.$sidx$ $sord$
+		</isNotEmpty>
+		<isEmpty property="sidx">
+		ORDER BY A.PROJNAME, A.TESTSTGENAME, A.TSCASENAME, A.ACMPLNTH DESC, A.DEFNO
+		</isEmpty>
+    </select>
+    
+    <!-- 나의테스트시나리오결함조회 건수 -->
+    <select id="getListMyTSFlawCnt" parameterClass="java.util.Map" resultClass="Integer">
+    	/* em_flaw_flaw.xml_getListMyTSFlawCnt_고재형 */
+    	SELECT count(*)
+		FROM TESINFO01 A,
+			 RPTSNRO01 B,
+			 RPTSNRO02 C,
+			 RPTDATA01 D,
+		     RPTDEFT01 E
+		WHERE A.PROJNO = B.PROJNO
+		  AND A.TESTSTGENAME = B.TESTSTGENAME
+		  AND B.TSSNRIOID = C.TSSNRIOID
+		  AND B.ACMPLNTH = C.ACMPLNTH
+		  AND C.TSDATAID = D.TSDATAID
+		  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+		  AND D.TSDATAID = E.TSDATAID
+		  AND D.ACMPLNTH = E.ACMPLNTH
+		  <isNotEmpty property="projNo">
+		  AND A.PROJNO = #projNo#
+		  </isNotEmpty>
+		  <isNotEmpty property="testStgeName">
+		  AND A.TESTSTGENAME = #testStgeName#
+		  </isNotEmpty>
+		  <isNotEqual property="defCd" compareValue="00">
+		  AND E.DEFCD = #defCd#
+		  </isNotEqual>
+		  AND (E.DEFDISUSRID = #usrId# OR E.ACTUSRID = #usrId#)
+    </select>
+    
+    <!-- 나의테스트시나리오결함조회 -->
+    <select id="getListMyTSFlaw" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_getListMyTSFlaw_고재형 */
+    	SELECT A.PROJNAME
+			  ,A.TESTSTGENAME
+			  ,A.TSSNRIONAME
+			  ,A.ACMPLNTH
+			  ,A.TSSNRIOID
+			  ,A.TSDATAID
+			  ,A.TSDATAACMPLNTH
+			  ,A.TSDATANAME
+			  ,A.DEFNO
+			  ,A.DEFREGNM
+			  ,A.TSCSDEFRNDSTCD
+			  ,A.DEFCD
+			  ,A.DEFREGYMS
+			  ,A.TREATFNSHYMS
+		FROM (
+	    	SELECT A.PROJNAME
+				  ,A.TESTSTGENAME
+				  ,B.TSSNRIONAME
+				  ,B.ACMPLNTH
+				  ,B.TSSNRIOID
+				  ,C.TSDATAID
+				  ,C.TSDATAACMPLNTH
+				  ,D.TSDATANAME
+				  ,E.DEFNO
+				  ,E.DEFREGNM
+				  ,E.TSCSDEFRNDSTCD
+				  ,TRIM(E.DEFCD) DEFCD
+				  ,E.DEFREGYMS
+				  ,E.TREATFNSHYMS
+			FROM TESINFO01 A,
+				 RPTSNRO01 B,
+				 RPTSNRO02 C,
+				 RPTDATA01 D,
+			     RPTDEFT01 E
+			WHERE A.PROJNO = B.PROJNO
+			  AND A.TESTSTGENAME = B.TESTSTGENAME
+			  AND B.TSSNRIOID = C.TSSNRIOID
+			  AND B.ACMPLNTH = C.ACMPLNTH
+			  AND C.TSDATAID = D.TSDATAID
+			  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+			  AND D.TSDATAID = E.TSDATAID
+			  AND D.ACMPLNTH = E.ACMPLNTH
+			  <isNotEmpty property="projNo">
+			  AND A.PROJNO = #projNo#
+			  </isNotEmpty>
+			  <isNotEmpty property="testStgeName">
+			  AND A.TESTSTGENAME = #testStgeName#
+			  </isNotEmpty>
+			  <isNotEqual property="defCd" compareValue="00">
+			  AND E.DEFCD = #defCd#
+			  </isNotEqual>
+			  AND (E.DEFDISUSRID = #usrId# OR E.ACTUSRID = #usrId#)
+			) A
+		<isNotEmpty property="sidx">
+		ORDER BY A.$sidx$ $sord$
+		</isNotEmpty>
+		<isEmpty property="sidx">
+		ORDER BY A.PROJNAME, A.TESTSTGENAME, A.TSSNRIONAME, A.ACMPLNTH DESC, A.DEFNO
+		</isEmpty>
+    </select>
+    
+    <!-- 나의테스트케이스재테스트 조회 건수 -->
+    <select id="getListMyTCReTestCnt" parameterClass="java.util.Map" resultClass="Integer">
+    	/* em_flaw_flaw.xml_getListMyTCReTestCnt_고재형 */
+	    SELECT count(*)
+		FROM TESINFO01 A,
+			 RPTCASE01 B,
+			 RPTCASE02 C,
+			 RPTDATA01 D,
+		     RPTDEFT01 E
+		WHERE A.PROJNO = B.PROJNO
+		  AND A.TESTSTGENAME = B.TESTSTGENAME
+		  AND B.TSCASEID = C.TSCASEID
+		  AND B.ACMPLNTH = C.ACMPLNTH
+		  AND C.TSDATAID = D.TSDATAID
+		  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+		  AND D.TSDATAID = E.TSDATAID
+		  AND D.ACMPLNTH = E.ACMPLNTH
+		  <isNotEmpty property="projNo">
+		  AND A.PROJNO = #projNo#
+		  </isNotEmpty>
+		  <isNotEmpty property="testStgeName">
+		  AND A.TESTSTGENAME = #testStgeName#
+		  </isNotEmpty>
+		  <isNotEqual property="defCd" compareValue="00">
+		  AND E.DEFCD = #defCd#
+		  </isNotEqual>
+		  AND E.DEFREGID = #usrId#
+    </select>
+    
+    <!-- 나의테스트케이스재테스트 조회 -->
+    <select id="getListMyTCReTest" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_getListMyTCReTest_고재형 */
+    	SELECT A.PROJNAME
+			  ,A.TESTSTGENAME
+			  ,A.TSCASENAME
+			  ,A.ACMPLNTH
+			  ,A.TSCASEID
+			  ,A.TSDATAID
+			  ,A.TSDATAACMPLNTH
+			  ,A.TSDATANAME
+			  ,A.DEFNO
+			  ,A.DEFREGNM
+			  ,A.TSCSDEFRNDSTCD
+			  ,A.DEFCD
+			  ,A.DEFREGYMS
+			  ,A.TREATFNSHYMS
+		FROM (
+		    SELECT A.PROJNAME
+				  ,A.TESTSTGENAME
+				  ,B.TSCASENAME
+				  ,B.ACMPLNTH
+				  ,B.TSCASEID
+				  ,C.TSDATAID
+				  ,C.TSDATAACMPLNTH
+				  ,D.TSDATANAME
+				  ,E.DEFNO
+				  ,E.DEFREGNM
+				  ,E.TSCSDEFRNDSTCD
+				  ,TRIM(E.DEFCD) DEFCD
+				  ,E.DEFREGYMS
+				  ,E.TREATFNSHYMS
+			FROM TESINFO01 A,
+				 RPTCASE01 B,
+				 RPTCASE02 C,
+				 RPTDATA01 D,
+			     RPTDEFT01 E
+			WHERE A.PROJNO = B.PROJNO
+			  AND A.TESTSTGENAME = B.TESTSTGENAME
+			  AND B.TSCASEID = C.TSCASEID
+			  AND B.ACMPLNTH = C.ACMPLNTH
+			  AND C.TSDATAID = D.TSDATAID
+			  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+			  AND D.TSDATAID = E.TSDATAID
+			  AND D.ACMPLNTH = E.ACMPLNTH
+			  <isNotEmpty property="projNo">
+			  AND A.PROJNO = #projNo#
+			  </isNotEmpty>
+			  <isNotEmpty property="testStgeName">
+			  AND A.TESTSTGENAME = #testStgeName#
+			  </isNotEmpty>
+			  <isNotEqual property="defCd" compareValue="00">
+			  AND E.DEFCD = #defCd#
+			  </isNotEqual>
+			  AND E.DEFREGID = #usrId#
+			) A
+		<isNotEmpty property="sidx">
+		ORDER BY A.$sidx$ $sord$
+		</isNotEmpty>
+		<isEmpty property="sidx">
+		ORDER BY A.PROJNAME, A.TESTSTGENAME, A.TSCASENAME, A.ACMPLNTH DESC, A.DEFNO
+		</isEmpty>
+    </select>
+    
+    <!-- 나의테스트시나리오재테스트 조회 건수 -->
+    <select id="getListMyTSReTestCnt" parameterClass="java.util.Map" resultClass="Integer">
+    	/* em_flaw_flaw.xml_getListMyTSReTestCnt_고재형 */
+    	SELECT count(*)
+		FROM TESINFO01 A,
+			 RPTSNRO01 B,
+			 RPTSNRO02 C,
+			 RPTDATA01 D,
+		     RPTDEFT01 E
+		WHERE A.PROJNO = B.PROJNO
+		  AND A.TESTSTGENAME = B.TESTSTGENAME
+		  AND B.TSSNRIOID = C.TSSNRIOID
+		  AND B.ACMPLNTH = C.ACMPLNTH
+		  AND C.TSDATAID = D.TSDATAID
+		  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+		  AND D.TSDATAID = E.TSDATAID
+		  AND D.ACMPLNTH = E.ACMPLNTH
+		  <isNotEmpty property="projNo">
+		  AND A.PROJNO = #projNo#
+		  </isNotEmpty>
+		  <isNotEmpty property="testStgeName">
+		  AND A.TESTSTGENAME = #testStgeName#
+		  </isNotEmpty>
+		  <isNotEqual property="defCd" compareValue="00">
+		  AND E.DEFCD = #defCd#
+		  </isNotEqual>
+		  AND E.DEFREGID = #usrId#
+    </select>
+    
+    <!-- 나의테스트시나리오재테스트 조회 -->
+    <select id="getListMyTSReTest" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.flaw.dto.FlawDto">
+    	/* em_flaw_flaw.xml_getListMyTSReTest_고재형 */
+    	SELECT A.PROJNAME
+			  ,A.TESTSTGENAME
+			  ,A.TSSNRIONAME
+			  ,A.ACMPLNTH
+			  ,A.TSSNRIOID
+			  ,A.TSDATAID
+			  ,A.TSDATAACMPLNTH
+			  ,A.TSDATANAME
+			  ,A.DEFNO
+			  ,A.DEFREGNM
+			  ,A.TSCSDEFRNDSTCD
+			  ,A.DEFCD
+			  ,A.DEFREGYMS
+			  ,A.TREATFNSHYMS
+		FROM (
+	    	SELECT A.PROJNAME
+				  ,A.TESTSTGENAME
+				  ,B.TSSNRIONAME
+				  ,B.ACMPLNTH
+				  ,B.TSSNRIOID
+				  ,C.TSDATAID
+				  ,C.TSDATAACMPLNTH
+				  ,D.TSDATANAME
+				  ,E.DEFNO
+				  ,E.DEFREGNM
+				  ,E.TSCSDEFRNDSTCD
+				  ,TRIM(E.DEFCD) DEFCD
+				  ,E.DEFREGYMS
+				  ,E.TREATFNSHYMS
+			FROM TESINFO01 A,
+				 RPTSNRO01 B,
+				 RPTSNRO02 C,
+				 RPTDATA01 D,
+			     RPTDEFT01 E
+			WHERE A.PROJNO = B.PROJNO
+			  AND A.TESTSTGENAME = B.TESTSTGENAME
+			  AND B.TSSNRIOID = C.TSSNRIOID
+			  AND B.ACMPLNTH = C.ACMPLNTH
+			  AND C.TSDATAID = D.TSDATAID
+			  AND C.TSDATAACMPLNTH = D.ACMPLNTH
+			  AND D.TSDATAID = E.TSDATAID
+			  AND D.ACMPLNTH = E.ACMPLNTH
+			  <isNotEmpty property="projNo">
+			  AND A.PROJNO = #projNo#
+			  </isNotEmpty>
+			  <isNotEmpty property="testStgeName">
+			  AND A.TESTSTGENAME = #testStgeName#
+			  </isNotEmpty>
+			  <isNotEqual property="defCd" compareValue="00">
+			  AND E.DEFCD = #defCd#
+			  </isNotEqual>
+			  AND E.DEFREGID = #usrId#
+			) A
+		<isNotEmpty property="sidx">
+		ORDER BY A.$sidx$ $sord$
+		</isNotEmpty>
+		<isEmpty property="sidx">
+		ORDER BY A.PROJNAME, A.TESTSTGENAME, A.TSSNRIONAME, A.ACMPLNTH DESC, A.DEFNO
+		</isEmpty>
+	</select>
+    
+</sqlMap>
+
+   

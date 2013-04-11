@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="checkPoint">
+    <select id="getListCheckPoint" resultClass="com.igo.testro.msg.tcmng.dto.CheckPointDTO">
+    /* em_tcmng_tcmng.xml_getListCheckPoint_박철화 */
+        SELECT TSDATAID
+			  ,CHKNO
+			  ,TSDATADESC
+			  ,TSDATAFLDNAME
+			  ,TSCSFLDDESC
+			  ,TSCSUSRFLDDESC
+			  ,CHKPOINTEXPCCTNT
+			  ,TSCSFLDDIV
+			  ,TSCSFLDTYPE
+			  ,TSCSFLDATTRIB
+			  ,CHKYN
+			  ,RPTCNTNAME
+			  ,RPTNAME
+			  ,RPTCNT
+			  ,WRITEID
+			  ,WRITENAME
+			  ,CRETNYMS
+			  ,LASTMODFIID
+			  ,LASTMODFIYMS
+			  ,RMARK
+        FROM TESCHEK01
+        WHERE tsdataID = #tsdataID#
+        ORDER BY chkNO
+    </select>
+</sqlMap>

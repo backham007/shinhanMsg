@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="MngUser">
+    <select id="getCnt" resultClass="Integer">
+    /* em_cmn_MngUser.xml_getCnt_노찬균  */
+		SELECT count(*)
+		FROM   
+			(
+			SELECT mngcode1.DTAILNAME, user1.* FROM 
+			mnguser01 user1 left outer join (SELECT DTAILNAME, DTAILCD FROM MNGCODE01 WHERE CDCLMNNAME ='USRLEVEL') mngcode1
+   			ON (user1.USRLEVEL = mngcode1.DTAILCD)
+   		     ) user1 left outer join  (SELECT * FROM mnguser02 WHERE DELYN = 'N')  user2 
+		ON (user1.USRID = user2.USRID)
+		where user1."DELYN" ='N'
+		<isNotEmpty property="usrID" prepend="and">
+			user1."USRID" LIKE '%'||#usrID#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrName" prepend="and">
+			user1."USRNAME" LIKE '%'||#usrName#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrLevel" prepend="and">
+			user1."USRLEVEL" LIKE '%'||#usrLevel#||'%'
+		</isNotEmpty>
+	</select>
+	
+	<select id="getlist" parameterClass="Map" resultClass="com.igo.testro.msg.cmn.dto.MngUserDto">
+	/* em_cmn_MngUser.xml_getlist_노찬균  */
+		SELECT 
+			user1."DTAILNAME" AS UsrLevelName,
+			user1."USRLEVEL" as UsrLevel, 
+			user1."USRID" as UsrID,
+			user1."USRNAME" as UsrName,
+			user2."PROJNO" as QaltyMgtProjNo, 
+			user2."PROJNAME" as QaltyMgtProjName, 
+			user2."TESTSTGENAME" as TestStgeName
+		FROM   
+			(
+			SELECT mngcode1.DTAILNAME, user1.* FROM 
+			mnguser01 user1 left outer join (SELECT DTAILNAME, DTAILCD FROM MNGCODE01 WHERE CDCLMNNAME ='USRLEVEL') mngcode1
+   			ON (user1.USRLEVEL = mngcode1.DTAILCD)
+   		     ) user1 left outer join  (SELECT * FROM mnguser02 WHERE DELYN = 'N')  user2 
+		ON (user1.USRID = user2.USRID)
+		where user1."DELYN" ='N'
+		<isNotEmpty property="usrID" prepend="and">
+			user1."USRID" LIKE '%'||#usrID#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrName" prepend="and">
+			user1."USRNAME" LIKE '%'||#usrName#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrLevel" prepend="and">
+			user1."USRLEVEL" LIKE '%'||#usrLevel#||'%'
+		</isNotEmpty> 
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getlistlowLevel" parameterClass="Map" resultClass="com.igo.testro.msg.cmn.dto.MngUserDto">
+	/* em_cmn_MngUser.xml_getlistlowLevel_노찬균  */
+		SELECT 
+			user1."DTAILNAME" AS UsrLevelName,
+			user1."USRLEVEL" as UsrLevel, 
+			user1."USRID" as UsrID,
+			user1."USRNAME" as UsrName,
+			user2."PROJNO" as QaltyMgtProjNo, 
+			user2."PROJNAME" as QaltyMgtProjName, 
+			user2."TESTSTGENAME" as TestStgeName
+		FROM   
+			(
+			SELECT mngcode1.DTAILNAME, user1.* FROM 
+			mnguser01 user1 left outer join (SELECT DTAILNAME, DTAILCD FROM MNGCODE01 WHERE CDCLMNNAME ='USRLEVEL') mngcode1
+   			ON (user1.USRLEVEL = mngcode1.DTAILCD)
+   		     ) user1 left outer join  (SELECT * FROM mnguser02 WHERE DELYN = 'N')  user2 
+		ON (user1.USRID = user2.USRID)
+		where user1."DELYN" ='N' and
+			user1.USRLEVEL &lt;&gt; '01'
+		<isNotEmpty property="usrID" prepend="and">
+			user1."USRID" LIKE '%'||#usrID#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrName" prepend="and">
+			user1."USRNAME" LIKE '%'||#usrName#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="usrLevel" prepend="and">
+			user1."USRLEVEL" LIKE '%'||#usrLevel#||'%'
+		</isNotEmpty> 
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countMngUser" parameterClass="com.igo.testro.msg.cmn.dto.MngUserDto" resultClass="com.igo.testro.msg.cmn.dto.MngUserDto">
+	/* em_cmn_MngUser.xml_countMngUser_노찬균  */
+		SELECT COUNT(*) cntYn
+		FROM   MNGUSER01
+		WHERE  "UsrID" = #lastModfiEmpid#
+	</select>
+	
+	<insert id="registerMngUser" parameterClass="com.igo.testro.msg.cmn.dto.MngUserDto">
+	/* em_cmn_MngUser.xml_registerMngUser_노찬균  */
+		INSERT INTO MNGUSER01 (
+			"USRID"
+			,"USRPWD"
+			,"USRNAME"
+			,"USRLEVEL"
+			,"DELYN"
+		)
+		VALUES (
+			#usrID#
+			,#usrPwd#
+			,#usrName#
+			,#usrLevel#
+			,#delYN#
+		)
+	</insert>
+	
+	<update id="updateUserInfo" parameterClass="com.igo.testro.msg.cmn.dto.MngUserDto" >
+	/* em_cmn_MngUser.xml_updateUserInfo_노찬균  */
+		UPDATE MNGUSER01 
+		SET "DELYN" = 'Y'
+		WHERE  "USRID"=#usrID#
+				and "USRNAME"=#usrName#
+	</update>
+	
+	<update id="updateUserTestInfo" parameterClass="com.igo.testro.msg.cmn.dto.MngUserDto" >
+	/* em_cmn_MngUser.xml_updateUserTestInfo_노찬균  */
+		UPDATE MNGUSER02 
+		SET "DELYN" = 'Y'
+		WHERE  "USRID"=#usrID# 
+			and	"PROJNO"=#projNo#
+	</update>
+
+</sqlMap>

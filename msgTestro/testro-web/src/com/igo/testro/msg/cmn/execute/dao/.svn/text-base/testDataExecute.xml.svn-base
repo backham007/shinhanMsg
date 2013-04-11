@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="testDataExecute">
+	<!-- 테스트 데이터 실적테이블 수행회차 조회 -->
+    <select id="getRptDataNextAcmplNth" resultClass="Integer">
+        /* msg_cmn_execute_testDataExecute.xml_getRptDataNextAcmplNth_김기태 */
+        SELECT MAX(acmplNth)+1 
+        FROM RPTDATA01
+        WHERE tsdataID = #tsdataID#
+    </select>
+    
+    <!-- 테스트데이터기본실적 저장 -->
+    <insert id="registerRptTestDataBasic" parameterClass="com.igo.testro.msg.cmn.execute.dto.RptTestDataBasicDTO">
+        /* msg_cmn_execute_testDataExecute.xml_registerRptTestDataBasic_김기태 */
+        INSERT 
+        INTO RPTDATA01
+        VALUES(
+            #tsdataID#      
+            , #acmplNth#         
+            , #tsdataName#    
+            , #tsdataDesc:VARCHAR#    
+            , #chnlDstcd:CHAR#     
+            , #scriptID:VARCHAR#      
+            , #tranCd:VARCHAR#        
+            , #tranName:VARCHAR#      
+            , #mgrLvelDstcd:CHAR#  
+            , #createDivCd:CHAR#   
+            , #osidOferYn:CHAR#    
+            , #projNO:VARCHAR#        
+            , #projName:VARCHAR#      
+            , #tstrID:VARCHAR#        
+            , #tstrName:VARCHAR#      
+            , #rsultSucssYN:CHAR#  
+            , #rsultMsg:VARCHAR#      
+            , #rsultImgFileYN:CHAR#
+            , #testStartYMS:CHAR#  
+            , #testEndYMS:CHAR#
+            , #elapsedTime:VARCHAR#    
+            , #testStgeName:VARCHAR#  
+            , #writeID:VARCHAR#       
+            , #writeName:VARCHAR#     
+            , #cretnYMS:CHAR#      
+            , #lastModfiID:VARCHAR#   
+            , #lastModfiYMS:CHAR#  
+            , #rmark:VARCHAR#         
+        )
+    </insert>
+    
+    <!-- 테스트데이터입력상세실적 저장 -->
+    <insert id="registerRptTestDataDetail" parameterClass="com.igo.testro.msg.cmn.execute.dto.RptTestDataDetailDTO">
+        /* msg_cmn_execute_testDataExecute.xml_registerRptTestDataDetail_김기태 */
+        INSERT 
+        INTO RPTDATA02(
+			TSDATAID
+			,ACMPLNTH
+			,TSDATANO
+			,TSDATAFLDNAME
+			,TSDATAFLDDATA
+			,TSCSFLDDIV
+			,TSCSFLDTYPE
+			,TSCSFLDATTRIB
+			,TSCSFLDSIZECNT
+			,TSCSFLDDESC
+			,TSCSUSRFLDDESC
+			,RPTCNTNAME
+			,RPTNAME
+			,RPTCNT
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        )
+        VALUES(
+            #tsdataID#
+            , #acmplNth#
+            , #tsdataNO#
+            , #tsdataFldName:VARCHAR#
+            , #tsdataFldData:VARCHAR#
+            , #tscsFldDiv:CHAR#
+            , #tscsFldType:VARCHAR#
+            , #tscsFldAttrib:CHAR#
+            , #tscsFldSizeCnt:VARCHAR#
+            , #tscsFldDesc:VARCHAR#
+            , #tscsUsrFldDesc:VARCHAR#
+            , #rptCntName:VARCHAR#
+            , #rptName:VARCHAR#
+            , #rptCnt:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:CHAR#
+            , #rmark:VARCHAR#         
+        )
+    </insert>
+    
+    <!-- 테스트데이터출력상세실적 저장 -->
+    <insert id="registerRptTestDataDetail2" parameterClass="com.igo.testro.msg.cmn.execute.dto.RptTestDataDetailDTO">
+        /* msg_cmn_execute_testDataExecute.xml_registerRptTestDataDetail2_김기태 */
+        INSERT 
+        INTO RPTDATA03(
+			TSDATAID
+			,ACMPLNTH
+			,TSDATANO
+			,TSDATAFLDNAME
+			,TSDATAFLDDATA
+			,TSCSFLDDIV
+			,TSCSFLDTYPE
+			,TSCSFLDATTRIB
+			,TSCSFLDSIZECNT
+			,TSCSFLDDESC
+			,TSCSUSRFLDDESC
+			,RPTCNTNAME
+			,RPTNAME
+			,RPTCNT
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        )
+        VALUES(
+            #tsdataID#
+            , #acmplNth#
+            , #tsdataNO#
+            , #tsdataFldName:VARCHAR#
+            , #tsdataFldData:VARCHAR#
+            , #tscsFldDiv:CHAR#
+            , #tscsFldType:VARCHAR#
+            , #tscsFldAttrib:CHAR#
+            , #tscsFldSizeCnt:VARCHAR#
+            , #tscsFldDesc:VARCHAR#
+            , #tscsUsrFldDesc:VARCHAR#
+            , #rptCntName:VARCHAR#
+            , #rptName:VARCHAR#
+            , #rptCnt:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:CHAR#
+            , #rmark:VARCHAR#
+        )
+    </insert>
+    
+    <!-- 체크포인트실적 저장 -->
+    <insert id="registerRptCheckPoint" parameterClass="com.igo.testro.msg.cmn.execute.dto.RptCheckPointDTO">
+        /* msg_cmn_execute_testDataExecute.xml_registerRptCheckPoint_김기태 */
+        INSERT 
+        INTO RPTCHEK01(
+			TSDATAID
+			,ACMPLNTH
+			,CHKNO
+			,TSDATADESC
+			,CHKPOINTSUCSSYN
+			,TSDATAFLDNAME
+			,TSCSFLDDESC
+			,TSCSUSRFLDDESC
+			,CHKPOINTEXPCCTNT
+			,CHKYN
+			,CHKPOINTOUTPTCTNT
+			,TSCSFLDDIV
+			,TSCSFLDTYPE
+			,TSCSFLDATTRIB
+			,RPTCNTNAME
+			,RPTNAME
+			,RPTCNT
+			,WRITEID
+			,WRITENAME
+			,CRETNYMS
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+        )
+        VALUES(
+            #tsdataID#
+            , #acmplNth#
+            , #chkNO#
+            , #tsdataDesc:VARCHAR#
+            , #chkPointSucssYN:CHAR#
+            , #tsdataFldName:VARCHAR#
+            , #tscsFldDesc:VARCHAR#
+            , #tscsUsrFldDesc:VARCHAR#
+            , #chkPointExpcCtnt:VARCHAR#
+            , #chkYN:CHAR#
+            , #chkPointOuptCtnt:VARCHAR#
+            , #tscsFldDiv#
+            , #tscsFldType#
+            , #tscsFldAttrib#
+            , #rptCntName:VARCHAR#
+            , #rptName:VARCHAR#
+            , #rptCnt:CHAR#
+            , #writeID:VARCHAR#
+            , #writeName:VARCHAR#
+            , #cretnYMS:CHAR#
+            , #lastModfiID:VARCHAR#
+            , #lastModfiYMS:VARCHAR#
+            , #rmark:VARCHAR#
+        )
+    </insert>
+</sqlMap>

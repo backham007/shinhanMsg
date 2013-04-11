@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="login">
+	<typeAlias alias="loginDto" type="com.igo.testro.cmn.login.dto.LoginDto"/>
+    <select id="getuserIdCount" parameterClass="java.util.Map" resultClass="Integer">
+        /* login.xml_getuserCount_안도현 */
+		SELECT
+			count(USRID)
+		FROM MNGUSER01
+		WHERE DELYN = 'N' 
+		  AND USRID  = #usrid#
+    </select>
+    <select id="getuserPwCount" parameterClass="java.util.Map" resultClass="Integer">
+        /* login.xml_getuserCount_안도현 */
+		SELECT
+			count(USRID)
+		FROM MNGUSER01
+		WHERE DELYN = 'N' 
+		  AND USRID  = #usrid#
+		  AND USRPWD = #usrpwd#
+    </select>
+    <select id="getuserinfo" parameterClass="java.util.Map" resultClass="loginDto">
+        /* login.xml_getuserinfo_안도현 */
+		SELECT
+			USRID,
+			USRNAME,
+			USRLEVEL,
+			USRPWD
+		FROM MNGUSER01
+		WHERE DELYN = 'N' 
+		  AND USRID  = #usrid#
+		  AND USRPWD = #usrpwd#
+    </select>
+    <select id="getprojectinfo" parameterClass="java.util.Map" resultClass="loginDto">
+        /* login.xml_getprojectinfo_안도현 */
+		SELECT
+			m1.PROJNO,
+			m1.PROJNAME,
+			m1.TESTSTGENAME,
+			m1.CONNSEVRDSTCD,
+			(select DTAILNAME FROM MNGCODE01 WHERE CDCLMNNAME = 'CONNSEVRDSTCD' AND DTAILCD = m1.CONNSEVRDSTCD) AS "CONNSEVRDSTCDNM",
+			m2.TESTSTARTYMS,
+			m2.TESTENDYMS
+		FROM MNGUSER02 m1, TESINFO01 m2
+		WHERE m1.USRID  = #usrid#
+		  AND m1.DEFAULTTEST = '1'
+		  AND m1.PROJNO = m2.PROJNO
+		  AND m1.PROJNAME = m2.PROJNAME
+		  AND m1.TESTSTGENAME = m2.TESTSTGENAME 
+    </select>
+    <select id="getUserIdInfo" parameterClass="String" resultClass="loginDto">
+        /* login.xml_getUserIdInfo_김성진 */
+		SELECT
+			USRID,
+			USRNAME,
+			USRLEVEL
+		FROM MNGUSER01
+		WHERE DELYN = 'N' 
+		  AND USRID  = #usrid#
+    </select>
+</sqlMap>

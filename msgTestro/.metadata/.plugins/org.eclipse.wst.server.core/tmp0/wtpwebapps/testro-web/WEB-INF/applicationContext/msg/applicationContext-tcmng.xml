@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+	<context:annotation-config />
+	<!-- 테스트케이스 관리 -->
+    <bean id="tcmngDao" class="com.igo.testro.msg.tcmng.dao.TcmngDao" /> 
+    <bean id="tcmngBiz" class="com.igo.testro.msg.tcmng.biz.TcmngBiz" />
+    
+    
+    <!-- 테스트케이스 불러오기 -->
+    <bean id="tcmngInfoDao" class="com.igo.testro.msg.tcmng.dao.TcmngInfoDao" /> 
+    <bean id="tcmngInfoBiz" class="com.igo.testro.msg.tcmng.biz.TcmngInfoBiz" />
+    
+	<!-- 테스트케이스  추가 -->
+    <bean id="tcmngAddDao" class="com.igo.testro.msg.tcmng.dao.TcmngAddDao" /> 
+    <bean id="tcmngAddBiz" class="com.igo.testro.msg.tcmng.biz.TcmngAddBiz" />
+</beans>

@@ -1,0 +1,20 @@
+#Thu Apr 04 14:10:15 KST 2013
+eclipse.preferences.version=1
+encoding//WebContent/WEB-INF/view/cmn/error.jsp=UTF-8
+encoding//WebContent/WEB-INF/view/cmn/leftMenu.jsp=UTF-8
+encoding//WebContent/WEB-INF/view/cmn/sysmng/dBConfMng.jsp=UTF-8
+encoding//WebContent/WEB-INF/view/cmn/sysmng/loggerMng.jsp=UTF-8
+encoding//WebContent/WEB-INF/view/cmn/sysmng/sysEnvVarMng.jsp=UTF-8
+encoding//WebContent/css/style.css=UTF-8
+encoding//WebContent/js/cmn/sysmng/loggerMng.js=UTF-8
+encoding//WebContent/js/cmn/sysmng/sysEnvVarMng.js=UTF-8
+encoding//src/com/igo/testro/cmn/dto/GridBaseDto.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/biz/DBConfMngBiz.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/biz/LoggerMngBiz.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/biz/SysEnvVarMngBiz.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/controller/DBConfMngController.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/controller/LoggerMngController.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/controller/LoginController.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/controller/SysEnvVarMngController.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/dto/DBConfMngDto.java=UTF-8
+encoding//src/com/igo/testro/cmn/sysmng/dto/SysEnvVarMngDto.java=UTF-8

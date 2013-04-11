@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="tsList">
+	<!-- 테스트 시나리오 기본 정보 조회 건수 -->
+    <select id="getTsCnt" parameterClass="java.util.HashMap" resultClass="Integer">
+        /* msg_tsmng_tsList.xml_getTsCnt_김기태 */
+        SELECT COUNT(*)
+        FROM TESSNRO01 snr
+        WHERE snr."DELYN" = 'N'
+        <dynamic prepend="AND">
+            <isNotEmpty property="writeName" prepend="AND">
+                snr.writeName LIKE  '%' || #writeName# || '%'
+            </isNotEmpty>
+            <isNotEmpty property="tsSnrioID" prepend="AND">
+                snr.tsSnrioID LIKE  '%' || #tsSnrioID# || '%'
+            </isNotEmpty>
+            <isNotEmpty property="tsSnrioName" prepend="AND">
+                snr.tsSnrioName LIKE  '%' || #tsSnrioName# || '%'
+            </isNotEmpty>
+            <isNotEmpty property="startDate" prepend="AND">
+                SUBSTR(snr.cretnYMS, 1, 8) >= #startDate#
+            </isNotEmpty>
+            <isNotEmpty property="endDate" prepend="AND">
+                SUBSTR(snr.cretnYMS, 1, 8) &lt;= #endDate#
+            </isNotEmpty>
+        </dynamic>
+    </select>
+    
+    <!-- 테스트 시나리오 기본 정보 조회 -->
+    <select id="getListTsInfo" parameterClass="java.util.HashMap" resultClass="com.igo.testro.msg.tsmng.dto.TestSnrioBasicDTO">
+        /* msg_tsmng_tsList.xml_getListTsInfo_김기태 */
+        SELECT snr.tsSnrioID
+		    , snr.tsSnrioName
+		    , snr.tsSnrioDesc
+            , snr.cretnYMS
+		    , snr.writeName
+		FROM TESSNRO01 snr
+        WHERE snr.delYN = 'N'
+		<dynamic prepend="AND">
+		    <isNotEmpty property="writeName" prepend="AND">
+                snr.writeName LIKE  '%' || #writeName# || '%'
+		    </isNotEmpty>
+            <isNotEmpty property="tsSnrioID" prepend="AND">
+                snr.tsSnrioID LIKE  '%' || #tsSnrioID# || '%'
+            </isNotEmpty>
+            <isNotEmpty property="tsSnrioName" prepend="AND">
+                snr.tsSnrioName LIKE  '%' || #tsSnrioName# || '%'
+            </isNotEmpty>
+            <isNotEmpty property="startDate" prepend="AND">
+                SUBSTR(snr.cretnYMS, 1, 8) >= #startDate#
+            </isNotEmpty>
+            <isNotEmpty property="endDate" prepend="AND">
+                SUBSTR(snr.cretnYMS, 1, 8) &lt;= #endDate#
+            </isNotEmpty>
+		</dynamic>
+		<dynamic prepend="ORDER BY">
+            <isNotEmpty property="sidx">
+            snr.$sidx$ $sord$
+            </isNotEmpty>
+        </dynamic>
+    </select>
+    
+    <!-- 테스트 시나리오 상세 정보 조회 건수 -->
+    <select id="getTsDetailCnt" parameterClass="java.util.HashMap" resultClass="Integer">
+        /* msg_tsmng_tsList.xml_getTsDetailCnt_김기태 */
+        SELECT COUNT(*)
+        FROM TESSNRO02 snro2
+            , TESDATA01 data1
+        WHERE snro2.tsdataID = data1.tsdataID
+        AND data1.delYN = 'N'
+        AND snro2.tsSnrioID = #tsSnrioID#
+    </select>
+    
+    <!-- 테스트 시나리오 상세 정보 조회 -->
+    <select id="getListTsDetailInfo" parameterClass="java.util.HashMap" resultClass="com.igo.testro.msg.tsmng.dto.TestSnrioDetailDTO">
+        /* msg_tsmng_tsList.xml_getListTsDetailInfo_김기태 */
+        SELECT snro2.tsSnrioID AS tsSnrioID
+          , snro2.tsSnrioNO AS tsSnrioNO
+          , snro2.tsdataID
+          , snro2.tsdataName
+          , snro2.tsCaseID
+          , data1.chnlDstcd
+          , data1.tranCd
+          , data1.tranName
+          , (CASE
+            WHEN (SELECT COUNT(tsSnrioID) 
+                  FROM TESSNRO03 snro3
+                  WHERE snro3.tsSnrioID = #tsSnrioID#
+                    AND snro3.tsSnrioNO = snro2.tsSnrioNO) > 0
+            THEN 'Y' 
+            ELSE 'N'
+            END) AS useIO
+          , data1.cretnYMS
+          , snro2.rmark
+        FROM TESSNRO02 snro2
+            , TESDATA01 data1
+        WHERE snro2.tsdataID = data1.tsdataID
+        AND data1.delYN = 'N'
+        AND snro2.tsSnrioID = #tsSnrioID#
+        <dynamic prepend="ORDER BY">
+            <isNotEmpty property="sidx">
+            $sidx$ $sord$
+            </isNotEmpty>
+        </dynamic>
+    </select>
+</sqlMap>

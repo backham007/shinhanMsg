@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="tcmng">
+
+	<select id="getBasicsData" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmng.xml_getBasicsData_김성진 */
+        SELECT 
+        	TSDATAID,
+			TSDATANAME,
+			TSDATADESC,
+			CHNLDSTCD,
+			SCRPTID,
+			TRANCD,
+			TRANNAME,
+			MGRLVELDSTCD,
+			CREATEDIVCD,
+			OSIDOFERYN,
+			CHKYN,
+			DELYN,
+			WRITEID,
+			WRITENAME,
+			CRETNYMS,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESDATA03
+        WHERE TRANCD = #tranCd# 
+        AND CHNLDSTCD = #chnlDstcd# 
+		AND DELYN = 'N'
+    </select>
+    
+    <select id="getTdBasicsDetailList" parameterClass="String" resultClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+    /* em_tcmng_tcmng.xml_getTdBasicsDetailList_김성진 */
+        SELECT 
+        	TSDATAID,
+			TSDATANO,
+			TSDATAFLDNAME,
+			TSDATAFLDDATA,
+			TSCSFLDDIV,
+			TSCSFLDTYPE,
+			TSCSFLDATTRIB,
+			TSCSFLDSIZECNT,
+			TSCSFLDDESC,
+			TSCSUSRFLDDESC,
+			RPTCNTNAME,
+			RPTNAME,
+			RPTCNT,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESDATA04
+		WHERE TSDATAID = #tsdataID#
+		ORDER BY TSDATANO ASC
+    </select>
+	
+    <select id="getTdList" parameterClass="String" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmng.xml_getTdList_김성진 */
+        SELECT 
+        	TD01.TSDATAID,
+			TD01.TSDATANAME,
+			TD01.TSDATADESC,
+			TD01.CHNLDSTCD,
+			TD01.SCRPTID,
+			TD01.TRANCD,
+			TD01.TRANNAME,
+			TD01.MGRLVELDSTCD,
+			TD01.CREATEDIVCD,
+			TD01.OSIDOFERYN,
+			CASE WHEN TD01.CHKYN = 'Y' THEN '설정'
+				 WHEN TD01.CHKYN = 'N' THEN '미설정'
+				 WHEN TD01.CHKYN = '' THEN '미설정' END CHKYN,
+			TD01.DELYN,
+			TD01.WRITEID,
+			TD01.WRITENAME,
+			TD01.CRETNYMS,
+			TD01.LASTMODFIID,
+			TD01.LASTMODFIYMS,
+			TD01.RMARK
+        FROM TESDATA01 TD01, TESCASE02 TC01
+		WHERE TD01.TSDATAID = TC01.TSDATAID
+		AND TD01.DELYN = 'N'
+		AND TC01.TSCASEID = #tsCaseID#
+		ORDER BY TC01.TSCASENO ASC
+    </select>
+    
+    <select id="getTdDetailList" parameterClass="java.util.Map" resultClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+    /* em_tcmng_tcmng.xml_getTdDetailList_김성진 */
+        SELECT 
+        	TSDATAID,
+			TSDATANO,
+			TSDATAFLDNAME,
+			TSDATAFLDDATA,
+			TSCSFLDDIV,
+			TSCSFLDTYPE,
+			TSCSFLDATTRIB,
+			TSCSFLDSIZECNT,
+			TSCSFLDDESC,
+			TSCSUSRFLDDESC,
+			RPTCNTNAME,
+			RPTNAME,
+			RPTCNT,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESDATA02
+		WHERE TSDATAID = #tsdataID#
+		ORDER BY TSDATANO ASC
+    </select>
+    
+    
+    <select id="getTsData" parameterClass="String" resultClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmng.xml_getTsData_김성진 */
+        SELECT 
+        	TSDATAID,
+			TSDATANAME,
+			TSDATADESC,
+			CHNLDSTCD,
+			SCRPTID,
+			TRANCD,
+			TRANNAME,
+			MGRLVELDSTCD,
+			CREATEDIVCD,
+			OSIDOFERYN,
+			CASE WHEN CHKYN = 'Y' THEN '설정'
+				 WHEN CHKYN = 'N' THEN '미설정'
+				 WHEN CHKYN = '' THEN '미설정' END CHKYN,
+			DELYN,
+			WRITEID,
+			WRITENAME,
+			CRETNYMS,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESDATA01
+		WHERE DELYN = 'N'
+		AND TSDATAID = #tsDataID#
+    </select>
+    
+    <select id="getTsDataDetailList" parameterClass="String" resultClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+    /* em_tcmng_tcmng.xml_getTsDataDetailList_김성진 */
+        SELECT 
+        	TSDATAID,
+			TSDATANO,
+			TSDATAFLDNAME,
+			TSDATAFLDDATA,
+			TSCSFLDDIV,
+			TSCSFLDTYPE,
+			TSCSFLDATTRIB,
+			TSCSFLDSIZECNT,
+			TSCSFLDDESC,
+			TSCSUSRFLDDESC,
+			RPTCNTNAME,
+			RPTNAME,
+			RPTCNT,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESDATA02
+		WHERE TSDATAID = #tsdataID#
+		ORDER BY TSDATANO ASC, TSCSFLDDIV ASC
+    </select>
+    
+    <update id="modTestCase" parameterClass="com.igo.testro.msg.tcmng.dto.TcDto">
+    /* em_tcmng_tcmng.xml_modTestCase_김성진 */
+        UPDATE TESCASE01 SET
+			TSCASENAME 		= #tsCaseName#,
+			TSCASEDESC 		= #tsCaseDesc#,
+			LASTMODFIID 	= #lastModfiID#,
+			LASTMODFIYMS 	= #lastModfiYMS#
+		WHERE TSCASEID 		= #tsCaseID#
+    </update>
+    
+    
+    <delete id="delTestCaseDetail" parameterClass="String">
+    /* em_tcmng_tcmng.xml_delTestCaseDetail_김성진 */
+        DELETE FROM TESCASE02
+		WHERE TSCASEID = #tsCaseID#
+    </delete>
+    
+    <insert id="regTestCase" parameterClass="com.igo.testro.msg.tcmng.dto.TcDto">
+    /* em_tcmng_tcmng.xml_regTestCase_김성진 */
+		INSERT INTO TESCASE01(TSCASEID, TSCASENAME, TSCASEDESC, CHNLDSTCD, TRANCD,
+							  TRANNAME, DELYN, WRITEID, WRITENAME, CRETNYMS, 
+							  LASTMODFIID, LASTMODFIYMS)
+		VALUES(#tsCaseID#, #tsCaseName#, #tsCaseDesc#, #chnlDstcd#, #tranCd#,
+			   #tranName#, #delYN#, #writeID#, #writeName#, #cretnYMS#, 
+			   #lastModfiID#, #lastModfiYMS#)
+    </insert>
+
+    <insert id="regTestData" parameterClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmng.xml_regTestData_김성진 */
+		INSERT INTO TESDATA01(TSDATAID, TSDATANAME, TSDATADESC, CHNLDSTCD, TRANCD,
+						  TRANNAME, DELYN, WRITEID, WRITENAME, CRETNYMS, CHKYN)
+		VALUES(#tsdataID#, #tsdataName#, #tsdataDesc#, #chnlDstcd#, #tranCd#,
+			   #tranName#, #delYN#, #writeID#, #writeName#, #cretnYMS#, #chkYN#)
+    </insert>
+    
+    
+    <update id="modTestData" parameterClass="com.igo.testro.msg.pretst.dto.TestDataDto">
+    /* em_tcmng_tcmng.xml_modTestData_김성진 */
+        UPDATE TESDATA01 SET
+			TSDATANAME 		= #tsdataName#,
+			TSDATADESC 		= #tsdataDesc#,
+			<isNotEmpty property="chkYN">
+	        CHKYN			= #chkYN#,
+	        </isNotEmpty>
+			LASTMODFIID 	= #lastModfiID#,
+			LASTMODFIYMS 	= #lastModfiYMS#
+		WHERE TSDATAID 		= #tsdataID#
+    </update>
+    
+    
+    <delete id="delTestDetailData" parameterClass="String">
+    /* em_tcmng_tcmng.xml_delTestDetailData_김성진 */
+        DELETE FROM TESDATA02
+		WHERE TSDATAID = #tsdataID#
+    </delete>
+    
+    <insert id="regTestCaseDetail" parameterClass="com.igo.testro.msg.tcmng.dto.TcDetailDto">
+    /* em_tcmng_tcmng.xml_regTestCaseDetail_김성진 */
+        INSERT INTO TESCASE02(TSCASEID, TSCASENO, TSDATAID, TSDATANAME, LASTMODFIID, LASTMODFIYMS)
+		VALUES(#tsCaseID#, #tsCaseNO#, #tsdataID#, #tsdataName#, #lastModfiID#, #lastModfiYMS#)
+    </insert>
+    
+    
+    <insert id="regTestDataDetail" parameterClass="com.igo.testro.msg.pretst.dto.TestDataDetailDto">
+    /* em_tcmng_tcmng.xml_regTestDataDetail_김성진 */
+        INSERT INTO TESDATA02(
+        					TSDATAID, 
+        					TSDATANO, 
+        					TSDATAFLDNAME, 
+        					TSDATAFLDDATA, 
+        					TSCSFLDDIV, 
+        					TSCSFLDTYPE, 
+        					TSCSFLDATTRIB, 
+        					TSCSFLDSIZECNT, 
+        					TSCSFLDDESC, 
+        					LASTMODFIID,
+        					LASTMODFIYMS, 
+        					RMARK,
+        					RPTCNTNAME,
+							RPTNAME,
+							RPTCNT
+        					)
+		VALUES(
+				#tsdataID#, 
+				#tsdataNO#, 
+				#tsdataFldName#, 
+				#tsdataFldData#, 
+				#tscsFldDiv#,
+			   	#tscsFldType#, 
+			   	#tscsFldAttrib#, 
+			   	#tscsFldSizeCnt#, 
+			   	#tscsFldDesc#, 
+			   	#lastModfiID#,
+			   	#lastModfiYMS#, 
+			   	'',
+			   	#rptCntName#,
+			   	#rptName#,
+			   	#rptCnt#
+			   	)
+    </insert>
+    
+    
+    <select id="getTsCaseInfo" parameterClass="String" resultClass="com.igo.testro.msg.tcmng.dto.TcDto">
+    /* em_tcmng_tcmng.xml_getTsCaseInfo_김성진 */
+		SELECT 
+			TSCASEID,
+			TSCASENAME,
+			TSCASEDESC,
+			CHNLDSTCD,
+			SCRPTID,
+			TRANCD,
+			TRANNAME,
+			MAPYN,
+			MGRLVELDSTCD,
+			OSIDOFERYN,
+			DELYN,
+			WRITEID,
+			WRITENAME,
+			CRETNYMS,
+			LASTMODFIID,
+			LASTMODFIYMS,
+			RMARK
+        FROM TESCASE01
+        WHERE TSCASEID = #tsCaseID#
+    </select>
+    
+    <select id="getAcmplNth" parameterClass="String" resultClass="String">
+    /* em_tcmng_tcmng.xml_getAcmplNth_김성진 */
+		SELECT 
+			MAX(ACMPLNTH)
+        FROM RPTCASE01
+        WHERE TSCASEID = #tsCaseID#
+    </select>
+    
+    
+    <insert id="regRptCase" parameterClass="com.igo.testro.msg.tcmng.dto.RptCaseDto">
+    /* em_tcmng_tcmng.xml_regRptCase_김성진 */
+		INSERT INTO RPTCASE01(
+			TSCASEID,
+			ACMPLNTH,
+			TSCASENAME,
+			TSCASEDESC,
+			CHNLDSTCD,
+			TRANCD,
+			TRANNAME,
+			MGRLVELDSTCD,
+			CONNSEVRDSTCD,
+			PROJNO,
+			PROJNAME,
+			TSTRID,
+			TSTRNAME,
+			TESTSTARTYMS,
+			TESTSTGENAME,
+			WRITEID,
+			WRITENAME,
+			CRETNYMS,
+			LASTMODFIID,
+			LASTMODFIYMS)
+		VALUES(
+			#tsCaseID#,
+			#acmplNth#,
+			#tsCaseName#,
+			#tsCaseDesc#,
+			#chnlDstcd#,
+			#tranCd#,
+			#tranName#,
+			#mgrLvelDstcd#,
+			#connSevrDstcd#,
+			#projNo#,
+			#projName#,
+			#tstrID#,
+			#tstrName#,
+			#testStartYMS#,
+			#testStgeName#,
+			#writeID#,
+			#writeName#,
+			#cretnYMS#,
+			#lastModfiID#,
+			#lastModfiYMS#
+		)	
+    </insert>
+    
+    <select id="getTsCaseNo" parameterClass="java.util.Map" resultClass="String">
+    /* em_tcmng_tcmng.xml_getTsCaseNo_김성진 */
+		SELECT 
+			MAX(TSCASENO)
+        FROM RPTCASE02
+        WHERE TSCASEID = #tsCaseID#
+        AND ACMPLNTH = #acmplNth#
+    </select>
+    
+    
+     <insert id="regRptCaseDetail" parameterClass="com.igo.testro.msg.tcmng.dto.RptCaseDetailDto">
+    /* em_tcmng_tcmng.xml_regRptCaseDetail_김성진 */
+		INSERT INTO RPTCASE02(
+			TSCASEID,
+			ACMPLNTH,
+			TSCASENO,
+			TSDATAID,
+			TSDATANAME,
+			TSDATAACMPLNTH,
+			RSULTSUCSSYN,
+			LASTMODFIID,
+			LASTMODFIYMS
+			)
+		VALUES(
+			#tsCaseID#,
+			#acmplNth#,
+			#tsCaseNo#,
+			#tsDataID#,
+			#tsDataName#,
+			#tsDataAcmpLnth#,
+			#rsultSucssYN#,
+			#lastModfiID#,
+			#lastModfiYMS#
+			)	
+    </insert>
+    
+    
+    <update id="modRptCase" parameterClass="com.igo.testro.msg.tcmng.dto.RptCaseDto">
+    /* em_tcmng_tcmng.xml_modRptCase_김성진 */
+		UPDATE RPTCASE01 SET 
+			RSULTSUCSSYN 	= #rsultSucssYN#,
+			TESTENDYMS		= #testEndYMS#,
+			LASTMODFIYMS	= #lastModfiYMS#
+		WHERE TSCASEID = #tsCaseID#
+		AND ACMPLNTH = #acmplNth#
+    </update>
+    
+    
+    
+    <delete id="delTesChek" parameterClass="String">
+    /* em_tcmng_tcmng.xml_delTesChek_김성진 */
+		DELETE FROM TESCHEK01 
+		WHERE TSDATAID = #tsDataID#
+    </delete>
+    
+    
+    <insert id="regTesChek" parameterClass="com.igo.testro.msg.tcmng.dto.CheckPointDTO">
+    /* em_tcmng_tcmng.xml_regTesChek_김성진 */
+		INSERT INTO TESCHEK01(
+			TSDATAID,
+			CHKNO,
+			TSDATADESC,
+			TSDATAFLDNAME,
+			TSCSFLDDESC,
+			CHKPOINTEXPCCTNT,
+			TSCSUSRFLDDESC,
+			CHKYN,
+			TSCSFLDDIV,
+			TSCSFLDTYPE,
+			TSCSFLDATTRIB,
+			WRITEID,
+			WRITENAME,
+			CRETNYMS,
+			LASTMODFIID,
+			LASTMODFIYMS
+			)
+		VALUES(
+			#tsdataID#,
+			#chkNO#,
+			#tsdataDesc#,
+			#tsdataFldName#,
+			#tscsFldDesc#,
+			#chkPointExpcCtnt#,
+			'',
+			#chkYN#,
+			#tscsFldDiv#,
+			#tscsFldType#,
+			#tscsFldAttrib#,
+			#writeID#,
+			#writeName#,
+			#cretnYMS#,
+			#lastModfiID#,
+			#lastModfiYMS#
+		)
+    </insert>
+    
+    
+    
+</sqlMap>

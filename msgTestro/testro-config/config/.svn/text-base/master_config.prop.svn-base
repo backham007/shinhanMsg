@@ -1,0 +1,14 @@
+# 시스템 실행환경 코드 (D : dev , T : test , P : prod)
+SYS_ENV_CD=D
+
+# was url 인코딩 (tomcat : ISO-8859-1, weblogic : UTF-8)
+WAS_URL_ENCODING=ISO-8859-1
+
+# 로그인체크 사용 여부 (default : true)
+LOGIN_CHECK_YN=true
+
+#login_url
+LOGIN_URL=/WEB-INF/view/cmn/login.jsp
+
+#로그인 체크를 하지 않는 URL목록
+LOGIN_PASS_URL=cmn.login.do|cmn.login.excutelogin.do

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+ <sqlMap namespace="pretst">
+    
+    <insert id="registerTesData" parameterClass="com.igo.testro.msg.pretst.dto.TesDataDto">
+    	/* em_pretst_pretst.xml__registerTesData_박철화 */
+    	INSERT INTO TESDATA03
+		(
+			TSDATAID
+			,CHNLDSTCD
+		    ,TRANCD
+		    ,TRANNAME
+		    ,TSDATANAME
+		    ,WRITEID
+		    ,WRITENAME
+		    ,LASTMODFIID
+		    ,LASTMODFIYMS
+		    ,TSDATADESC
+		    ,DELYN
+		)
+		VALUES
+		(
+			#tsdataID#
+			,#chnlDstcd:CHAR#
+		    ,#tranCd#
+		    ,#tranName:VARCHAR#
+		    ,#tsdataName:VARCHAR#
+		    ,#writeID:VARCHAR#
+		    ,#writeName:VARCHAR#
+		    ,#lastModfiID:VARCHAR#
+		    ,#lastModfiYMS:VARCHAR#
+		    ,#tsdataDesc:VARCHAR#
+		    ,'N'
+		)
+    </insert>
+    
+    
+        <insert id="registerTesDataDetail" parameterClass="com.igo.testro.msg.pretst.dto.TesDataDetailDto">
+    	/* em_pretst_pretst.xml__registerTesDataDetail_박철화 */
+    	INSERT INTO TESDATA04
+		(
+			TSDATAID
+			,TSDATANO
+			,TSDATAFLDNAME
+		    ,TSDATAFLDDATA
+		    ,TSCSFLDTYPE
+		    ,TSCSFLDATTRIB
+		    ,TSCSFLDSIZECNT
+		    ,TSCSFLDDESC
+		    ,TSCSFLDDIV
+		    ,LASTMODFIID
+		    ,LASTMODFIYMS
+		    ,RPTNAME
+		    ,RPTCNTNAME
+		    ,RPTCNT
+		   
+		)
+		VALUES
+		(
+			#tsdataID#
+			,#tsdataNO#
+		    ,#tsdataFldName:VARCHAR#
+		    ,#tsdataFldData:VARCHAR#
+		    ,#tscsFldType:VARCHAR#
+		    ,#tscsFldAttrib:CHAR#
+		    ,#tscsFldSizeCnt:VARCHAR#
+		    ,#tscsFldDesc:VARCHAR#
+		    ,#tscsFldDiv:CHAR#
+		    ,#lastModfiID:CHAR#
+		    ,#lastModfiYMS:VARCHAR#
+	        ,#rptName:VARCHAR#
+	        ,#rptCntName:CHAR#
+            ,#rptCnt:CHAR#
+		    
+		)
+    </insert>
+    <select id="getTesDataIdNum" parameterClass="String" resultClass="String">
+    /* em_pretst_pretst.xml__getTesDataIdNum_박철화 */
+    SELECT "TSDATAID" FROM TESDATA03
+		WHERE "TRANCD" = #tranCd#
+    </select>
+    
+    <delete id="deleteTesData" parameterClass="java.util.Map">
+    	 /* em_pretst_pretst.xml_deleteTesData_박철화 */
+    	DELETE FROM TESDATA03
+    	WHERE 
+    	"TRANCD" = #tranCd#
+    </delete>
+        <delete id="deleteTesDataDetail" parameterClass="java.util.Map">
+    	 /* em_pretst_pretst.xml_deleteTesDataDetail_박철화 */
+    	DELETE FROM TESDATA04
+    	WHERE
+    	"TSDATAID" = #tsdataIdNum#
+    	
+    </delete>
+	
+</sqlMap>
+
+   

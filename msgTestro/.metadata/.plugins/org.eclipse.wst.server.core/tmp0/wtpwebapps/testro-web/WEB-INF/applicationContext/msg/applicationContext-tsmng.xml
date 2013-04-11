@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+    
+    <context:annotation-config />
+    <bean id="tsMngBiz" class="com.igo.testro.msg.tsmng.biz.TsMngBiz" />
+    <bean id="tsMngDao" class="com.igo.testro.msg.tsmng.dao.TsMngDao" />
+    <bean id="tsListBiz" class="com.igo.testro.msg.tsmng.biz.TsListBiz" /> 
+    <bean id="tsListDao" class="com.igo.testro.msg.tsmng.dao.TsListDao" />
+    <bean id="tdDetailBiz" class="com.igo.testro.msg.tsmng.biz.TdDetailBiz" />         
+    <bean id="tsExecuteBiz" class="com.igo.testro.msg.tsmng.biz.TsExecuteBiz" />
+    <bean id="tsExecuteDao" class="com.igo.testro.msg.tsmng.dao.TsExecuteDao" />
+    <bean id="testDataExecuteBiz" class="com.igo.testro.msg.cmn.execute.biz.TestDataExecuteBiz" />
+    <bean id="testDataExecuteDao" class="com.igo.testro.msg.cmn.execute.dao.TestDataExecuteDao" />
+    <bean id="checkPointDao" class="com.igo.testro.msg.tcmng.dao.CheckPointDao" />
+</beans>

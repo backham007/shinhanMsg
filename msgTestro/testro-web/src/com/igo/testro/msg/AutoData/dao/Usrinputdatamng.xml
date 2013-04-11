@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="Usrinputdatamng">
+	<select id="serachCnt" parameterClass="Map" resultClass="Integer" >
+	/* em_AutoData_Usrinputdatamng.xml_serachCnt_노찬균  */
+		select count(*) 
+		from mngcode02
+		where DELYN ='N'
+		<isNotEmpty property="fldName" prepend="and">
+			FLDNAME LIKE '%'||#fldName#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="writeName" prepend="and">
+			WRITENAME LIKE '%'||#writeName#||'%'
+		</isNotEmpty>
+	</select>
+	
+	<select id="serachList" parameterClass="Map" resultClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_serachList_노찬균  */
+		select 
+			FLDID,
+			FLDNAME,
+			WRITENAME,
+			WRITEID,
+			FLDID as NEWINSERT
+		from mngcode02
+		where DELYN ='N'
+		<isNotEmpty property="fldName" prepend="and">
+			FLDNAME LIKE '%'||#fldName#||'%'
+		</isNotEmpty> 
+		<isNotEmpty property="writeName" prepend="and">
+			WRITENAME LIKE '%'||#writeName#||'%'
+		</isNotEmpty> 
+		<dynamic prepend="ORDER BY">
+			<isNotEmpty property="sidx">
+			"$sidx$" $sord$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="reserachList" parameterClass="Map" resultClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_reserachList_노찬균  */
+		select 
+			FLDID,
+			FLDNAME,
+			WRITENAME,
+			WRITEID,
+			FLDID as NEWINSERT
+		from mngcode02
+		where FLDID=#fldId# and
+			DELYN ='N'
+	</select>
+	
+	<select id="countUsrinputdatamngList" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto" resultClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_countUsrinputdatamngList_노찬균  */
+		select COUNT(*) cntYn
+		from   mngcode02
+	</select>
+	
+	<update id="updateUsrinputdatamng" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_updateUsrinputdatamng_노찬균  */
+		UPDATE mngcode02 
+		SET FLDNAME =#fldName#
+			,DELYMS =#delYMS#
+		WHERE  FLDID = #fldId#
+	</update>
+	
+	<insert id="insertUsrinputdatamng" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_insertUsrinputdatamng_노찬균  */
+		INSERT INTO mngcode02 (
+			FLDID
+			,FLDNAME
+			,FLDDESC
+			,DELYN
+			,WRITEID
+			,WRITENAME
+			,DELYMS
+			,RMARK
+		)
+		VALUES (
+			#fldId#
+			,#fldName#
+			,'프로젝트설명'
+			,'N'
+			,#writeId#
+			,#writeName#
+			,#delYMS#
+			,'비고'
+		)
+	</insert>
+	
+	<update id="getDelete" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto" >
+	/* em_AutoData_Usrinputdatamng.xml_getDelete_노찬균  */
+		UPDATE mngcode02 
+		SET DELYN = 'Y'
+		WHERE  FLDID=#fldId#
+	</update>
+	
+	<select id="detailSerachList" parameterClass="Map" resultClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_detailSerachList_노찬균  */
+		select 
+			FLDID,
+			OUTPTSEQNO,
+			DTAILFLDNAME,
+			WRITENAME,
+			WRITEID,
+			FLDID as NEWINSERT
+		from mngcode03
+		where FLDID =#fldId# 
+	</select>
+	
+	<select id="detailSearchCnt" parameterClass="Map" resultClass="Integer" >
+	/* em_AutoData_Usrinputdatamng.xml_detailSerachList_노찬균  */
+		select count(*)
+		from mngcode03
+		where FLDID =#fldId#
+	</select>
+	
+	<delete id="detailDeleteUsrinputdatamng" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_detailDeleteUsrinputdatamng_노찬균  */
+		delete
+		from mngcode03
+		where FLDID = #fldId#
+	</delete>
+	
+		
+	<insert id="detailInsertUsrinputdatamng" parameterClass="com.igo.testro.msg.AutoData.dto.UsrinputdatamngDto">
+	/* em_AutoData_Usrinputdatamng.xml_detailInsertUsrinputdatamng_노찬균  */
+		INSERT INTO mngcode03 (
+			FLDID
+			,OUTPTSEQNO
+			,DTAILFLDNAME
+			,DTAILFLDDESC
+			,WRITEID
+			,WRITENAME
+			,DELYMS
+			,RMARK
+		)
+		VALUES (
+			#fldId#
+			,#listNo#
+			,#dtailFldName#
+			,'프로젝트설명'
+			,#writeId#
+			,#writeName#
+			,#delYMS#
+			,'비고'
+		)
+	</insert>
+</sqlMap>

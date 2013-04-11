@@ -1,0 +1,6 @@
+INDEX VERSION 1.122+D:\msgTestro\workspace\msgTestro\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+3742932977.index
+632526102.index
+3922060446.index
+802531259.index
+3603524333.index

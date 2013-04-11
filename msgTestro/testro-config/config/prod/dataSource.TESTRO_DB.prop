@@ -1,0 +1,8 @@
+type=jdbc
+transaction=true
+configLocation=classpath:sql-map-config.xml
+driverClassName=org.apache.derby.jdbc.ClientDriver
+url=jdbc:derby://192.168.0.14:1527/C:/testro/wtestro/derby/tablespace/msgTestroDev
+username=TESTRO1
+password=igo123
+maxActive=30

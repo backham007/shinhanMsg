@@ -1,0 +1,11 @@
+/* $Id: tiny.css,v 1.2 2008/10/06 06:54:55 ssoh Exp $ */
+.calendar {
+  border-width: 1px;
+  font-size: 8px;
+}
+
+.calendar table {
+  font-size: 8px;
+}
+
+.calendar tbody .day { width: 1.5em; }

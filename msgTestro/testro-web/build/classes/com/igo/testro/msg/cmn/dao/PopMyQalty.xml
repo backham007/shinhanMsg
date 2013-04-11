@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+
+<sqlMap namespace="PopMyQalty">
+
+    <select id="getCheck" parameterClass="String" resultClass="Integer">
+    /* em_cmn_PopMyQalty.xml_getCheck_노찬균  */
+		select count(*) userIdCheck
+		from TESINFO01
+		where PROJNO = #projNo#
+	</select>
+	
+	<select id="projectStepCheckMngUser" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="Integer">
+    /* em_cmn_PopMyQalty.xml_getCheck_노찬균  */
+		select count(*) userIdCheck
+		from TESINFO01
+		where PROJNO = #projNo#
+			and TESTSTGENAME = #testStgeName#
+	</select>
+	
+	<insert id="getProjectInsert" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_PopMyQalty.xml_getProjectInsert_노찬균  */
+		insert into TESINFO01(
+			PROJNO
+			,TESTSTGENAME
+			,PROJNAME
+			,TESTSTARTYMS
+			,TESTENDYMS
+			,LASTMODFIID
+			,LASTMODFIYMS
+			,RMARK
+		)
+		values(
+			#projNo#
+			,#testStgeName#
+			,#projName#
+			,#testStartYMS#
+			,#testEndYMS#
+			,#lastModfiEmpid#
+			,#lastModfiYMS#
+			,''
+		)
+	</insert>
+	
+	<select id="projectSearch" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto" resultClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+    /* em_cmn_PopMyQalty.xml_projectSearch_노찬균  */
+		select 
+			PROJNO, 
+			TESTSTGENAME, 
+			PROJNAME, 
+			TESTSTARTYMS,
+			TESTENDYMS 
+		from TESINFO01
+		where PROJNO = #projNo#
+			and TESTSTGENAME = #testStgeName#
+	</select>
+	
+	<update id="getprojectUpdate" parameterClass="com.igo.testro.msg.cmn.dto.MyQaltyDto">
+	/* em_cmn_PopMyQalty.xml_getprojectUpdate_노찬균  */
+		UPDATE TESINFO01
+		SET 
+			TESTSTGENAME = #testStgeName#
+			,PROJNAME = #projName#
+			,TESTSTARTYMS =#testStartYMS#
+			,TESTENDYMS = #testEndYMS#
+			,LASTMODFIID = #lastModfiEmpid#
+			,LASTMODFIYMS= #lastModfiYMS#
+		WHERE PROJNO = #projNo#
+			and TESTSTGENAME = #testStgeName#
+	</update>
+	
+</sqlMap>

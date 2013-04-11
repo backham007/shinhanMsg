@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd" >
+<sqlMap namespace="exests">
+
+	<typeAlias alias="exeStsRsltDto" type="com.igo.testro.msg.exeSts.dto.ExeStsRsltDTO"/>
+	<select id="getTscsExeStsLst" resultClass="exeStsRsltDto">
+	/* exests.xml_getTscsExeStsLst_테스트케이스수행현황 조회 */ 
+	SELECT 
+       	   RPT01.TSCASEID      as "tscaseId"
+	      ,RPT01.ACMPLNTH      as "acmplNth"
+	      ,RPT01.TSCASENAME    as "tscaseName"
+	      ,(select dtailname
+	        from mngcode01
+	        where cdclmnname = 'CONNSEVRDSTCD'
+	              and divname = '접속서버구분코드'
+	              and dtailcd = RPT01.CONNSEVRDSTCD) as connsevrDstcd
+	      ,RPT02."tcCount"     as "tdCount"
+	      ,RPT02."succData"    as "succTdData"
+	      ,RPT02."failData"    as "failTdData"
+	      ,RPT02."noneExeData" as "noneExeTdData"
+	      ,RPT01.TESTSTARTYMS  as "testStartYMS"
+	      ,RPT01.WRITEID       as "writeId"
+	      ,RPT01.WRITENAME||'('||RPT01.WRITEID||')' as "writeName"
+	      ,RPT01.TSTRNAME||'('||RPT01.TSTRID||')' as   "tstrName"
+	      ,(case
+	        when RPT01.RSULTSUCSSYN = 'Y' then '성공'
+	        else '실패' END)  as "rsultSucssYn"
+	      ,RPT01.TSCASEDESC    as "tscaseDesc"
+	FROM RPTCASE01 RPT01
+		,(select 
+        		RPT01.TSCASEID
+		       ,RPT01.ACMPLNTH
+       		   ,count(RPT01."TSCASEID")  as "tcCount"
+       		   ,SUM(case when RPT02.RSULTSUCSSYN = 'Y' then 1 else 0 END)  as "succData"
+		       ,sum(case when RPT02.RSULTSUCSSYN = 'N' then 1 else 0 END)  as  "failData"
+		       ,sum(case when RPT02.RSULTSUCSSYN is null then 1 else 0 END)  as "noneExeData"
+          
+          from RPTCASE01 RPT01  <!-- 실적기본 -->
+    		   ,RPTCASE02 RPT02 <!-- 실적 상세-->
+		  where 
+			      RPT01.TSCASEID = RPT02.TSCASEID
+			      AND RPT01.ACMPLNTH = RPT02.ACMPLNTH
+			     <isNotEmpty property="testStartYMS" prepend="and">
+				      (substr(RPT01."TESTSTARTYMS", 1, 8) between #testStartYMS# and #testEndYMS#                 
+				       or                  
+				       substr(RPT01."TESTENDYMS", 1, 8) between #testStartYMS# and #testEndYMS#)  
+				 </isNotEmpty>
+				 <isNotEmpty property="tranCd" prepend="AND">
+				 	   RPT01.TRANCD = #tranCd#
+				 </isNotEmpty>
+				 <isNotEmpty property="tranName" prepend="AND">
+				       RPT01.TRANNAME = #tranName#
+				 </isNotEmpty>
+				 <isNotEmpty property="tstrName" prepend="AND">
+					    (RPT01.TSTRID = #tstrName# or RPT01.TSTRNAME = #tstrName#)				 
+				 </isNotEmpty>
+				 <isNotEmpty property="projNo" prepend="AND">
+					   RPT01.PROJNO = #projNo#				 
+				 </isNotEmpty>
+				 <isNotEmpty property="testStgeName" prepend="AND">
+					   RPT01.TESTSTGENAME = #testStgeName#				 
+				 </isNotEmpty>
+				 <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+					   RPT01.CONNSEVRDSTCD = #connSevrDstcd#				 
+				 </isNotEqual>
+		  group by RPT01.TSCASEID,RPT01.ACMPLNTH
+		  ) RPT02
+	WHERE 
+		  RPT02.TSCASEID = RPT01.TSCASEID
+		  AND RPT02.ACMPLNTH = RPT01.ACMPLNTH
+	ORDER BY RPT01.TSCASEID desc,RPT01.ACMPLNTH desc 
+	</select>
+   
+   <select id="getSnroExeStsLst" resultClass="exeStsRsltDto">
+   /* exests.xml_getSnroExeStsLst_테스트시나리오 수행현황 조회 */
+   		SELECT
+   		       RPT01.TSSNRIOID     as "tscaseId"
+		      ,RPT01.TSSNRIONAME   as "tscaseName"
+		      ,RPT01.ACMPLNTH      as "acmplNth"
+		      ,(select dtailname
+	            from mngcode01
+	            where cdclmnname = 'CONNSEVRDSTCD'
+	              and divname = '접속서버구분코드'
+	              and dtailcd = RPT01.CONNSEVRDSTCD) as connsevrDstcd
+		      ,RPT02."tcCount"     as "tdCount"
+		      ,RPT02."succCount"   as "succTdData"
+		      ,RPT02."failCount"   as "failTdData"
+		      ,RPT02."noneExeCount" as "noneExeTdData"
+		      ,RPT01.TESTSTARTYMS  as "testStartYMS"
+		      ,RPT01.WRITEID       as "writeId"
+		      ,RPT01.WRITENAME||'('||RPT01.WRITEID||')' as "writeName"
+			  ,RPT01.TSTRNAME||'('||RPT01.TSTRID||')' as   "tstrName"
+			  ,(case when RPT01.RSULTSUCSSYN = 'Y' then '성공'
+			  		 else '실패' END)         	      as   "rsultSucssYn"
+			  ,RPT01.TSSNRIODESC                      as   "tscaseDesc"
+		FROM
+			  RPTSNRO01 RPT01
+			,(SELECT  RPT01.TSSNRIOID,
+			        RPT01.ACMPLNTH,
+			        count(RPT02.TSSNRIOID) "tcCount",
+			        SUM(case when RPT02.RSULTSUCSSYN = 'Y'  then 1 else 0 END)  "succCount",
+			        SUM(case when RPT02.RSULTSUCSSYN = 'N'  then 1 else 0 END)  "failCount",
+			        SUM(case when RPT02.RSULTSUCSSYN is null then 1 else 0 END)  "noneExeCount"
+			        
+			FROM RPTSNRO01 RPT01
+			    ,RPTSNRO02 RPT02
+			WHERE     RPT01.TSSNRIOID = RPT02.TSSNRIOID
+			      AND RPT01.ACMPLNTH =  RPT02.ACMPLNTH
+			      <isNotEmpty property="testStartYMS" prepend="and">
+				      (substr(RPT01."TESTSTARTYMS", 1, 8) between #testStartYMS# and #testEndYMS#                 
+				       or                  
+				       substr(RPT01."TESTENDYMS", 1, 8) between #testStartYMS# and #testEndYMS#)  
+				 </isNotEmpty>
+				 <isNotEmpty property="tstrName" prepend="AND">
+					   (RPT01.TSTRID = #tstrName# or RPT01.TSTRNAME = #tstrName#)				 
+				 </isNotEmpty>
+				 <isNotEmpty property="projNo" prepend="AND">
+					   RPT01.PROJNO = #projNo#				 
+				 </isNotEmpty>
+				  <isNotEmpty property="testStgeName" prepend="AND">
+					   RPT01.TESTSTGENAME = #testStgeName#				 
+				 </isNotEmpty>
+				 <isNotEqual property="connSevrDstcd" compareValue="00" prepend="AND">
+					   RPT01.CONNSEVRDSTCD = #connSevrDstcd#				 
+				 </isNotEqual>
+			GROUP BY  RPT01.TSSNRIOID,RPT01.ACMPLNTH ) RPT02
+		WHERE 
+         	  RPT01.TSSNRIOID = RPT02.TSSNRIOID
+    	  AND RPT01.ACMPLNTH  = RPT02.ACMPLNTH
+    	ORDER BY RPT01.TSSNRIOID desc, RPT01.ACMPLNTH desc
+ 
+   </select>
+</sqlMap>

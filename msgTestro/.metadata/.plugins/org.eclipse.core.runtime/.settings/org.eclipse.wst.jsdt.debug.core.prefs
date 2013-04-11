@@ -1,0 +1,4 @@
+#Wed Apr 10 10:46:59 KST 2013
+org.eclipse.wst.jsdt.debug.core.suspend_on_thrown_exceptions=true
+org.eclipse.wst.jsdt.debug.core.suspend_on_all_script_loads=false
+eclipse.preferences.version=1
